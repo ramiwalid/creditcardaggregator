@@ -24,3 +24,54 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+@keyframes card-float-slow {
+  0% {
+    transform: translateY(0px) rotateX(18deg) rotateY(-18deg) rotateZ(-6deg);
+  }
+  50% {
+    transform: translateY(-10px) rotateX(18deg) rotateY(-18deg) rotateZ(-6deg);
+  }
+  100% {
+    transform: translateY(0px) rotateX(18deg) rotateY(-18deg) rotateZ(-6deg);
+  }
+}
+
+@keyframes card-float-medium {
+  0% {
+    transform: translateY(0px) rotateX(22deg) rotateY(14deg) rotateZ(8deg);
+  }
+  50% {
+    transform: translateY(-10px) rotateX(22deg) rotateY(14deg) rotateZ(8deg);
+  }
+  100% {
+    transform: translateY(0px) rotateX(22deg) rotateY(14deg) rotateZ(8deg);
+  }
+}
+
+.animate-card-float-slow {
+  animation: card-float-slow 5s ease-in-out infinite;
+}
+
+.animate-card-float-medium {
+  animation: card-float-medium 10s ease-in-out infinite;
+}
+
+.animate__animated.animate__slideInUp {
+	animation-duration: 4s;
+}
+.animate__animated.animate__bounceInLeft {
+	animation-duration: 1s;
+}
+.animate__animated.animate__bounceInUp {
+	animation-duration: 3s;
+}
+.animate__animated.animate__bounceInDown {
+	animation-duration: 2s;
+}
+.animate__animated.animate__slideInRight {
+	animation-duration: 1100ms;
+}
+.animate__animated.animate__slideInLeft {
+	animation-duration: 1100ms;
+}

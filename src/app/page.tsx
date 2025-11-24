@@ -1,10 +1,12 @@
-import Image from "next/image";
 import Navbar from "@/components/home/Navbar";
+import Hero from "@/components/home/hero/Hero";
+import 'animate.css';
 
 export default function Home() {
-	return (
-		<div>
-			<Navbar />
-		</div>
-	)
+  return (
+    <div>
+      <Navbar />
+      <Hero />
+    </div>
+  );
 }
