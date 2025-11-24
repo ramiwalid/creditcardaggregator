@@ -5,6 +5,13 @@ import venmo from "public/venmo.svg";
 import discover from "public/discover.svg";
 import goldman from "public/goldmansachs.svg";
 import chase from "public/chase.svg";
+import barclays from "public/barclays.svg";
+import wellsfargo from "public/wellsfargo.svg";
+import deutsche from "public/deutschebank.svg";
+
+// Tweak these constants to change the logo footprint across the tape
+const LOGO_WIDTH = 150
+const LOGO_HEIGHT = 50
 
 export default function Tape() {
 	const institutions = [
@@ -32,14 +39,34 @@ export default function Tape() {
 			name: "JPMorgan & Chase",
 			logo: chase
 		},
+		{
+			name: "Barclays",
+			logo: barclays
+		},
+		{
+			name: "Wells Fargo",
+			logo: wellsfargo
+		},
+		{
+			name: "Deutsche Bank",
+			logo: deutsche
+		}
 	]
 
+	const tapeItems = institutions.concat(institutions)
+
 	return (
-		<div className="w-full bg-white overflow-hidden py-6 bg-transparent px-10">
-			<div className="flex animate-scroll whitespace-nowrap gap-20 font-bold text-xl">
-			{institutions.concat(institutions).map((bank, i) => (
-				<div className="flex items-center justify-between text-white/60" key={i}>
-					<Image src={bank.logo} alt={bank.name} width={200}/>
+		<div className="w-full h-auto bg-[#0a0f1f] overflow-hidden py-6 bg-transparent px-10">
+			<div className="flex animate-scroll whitespace-nowrap font-bold w-max">
+			{[...tapeItems, ...tapeItems].map((bank, i) => (
+				<div className="invert mx-10 flex-none flex items-center" key={`${bank.name}-${i}`}>
+					<Image
+						src={bank.logo}
+						alt={bank.name}
+						width={LOGO_WIDTH}
+						height={LOGO_HEIGHT}
+						style={{ height: LOGO_HEIGHT, width: "auto" }}
+					/>
 				</div>
 			))}
 			</div>
