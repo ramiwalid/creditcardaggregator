@@ -10,12 +10,14 @@ export default function Home() {
 			<Navbar />
 			<Hero />
 			<Demo />
-			<div className="relative w-full overflow-hidden py-6">
-				<div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#0a0f1f] to-transparent">
+			<div className="relative bg-[#11152a]">
+				<div className="relative w-full overflow-hidden py-6">
+					<div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#0a0f1f] to-transparent">
+					</div>
+					<div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-1 from-[#0a0f1f] to-transparent">
+					</div>
+					<Tape />
 				</div>
-				<div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-1 from-[#0a0f1f] to-transparent">
-				</div>
-				<Tape />
 			</div>
 		</div>
 	)
