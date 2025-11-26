@@ -56,7 +56,7 @@ export default function Tape() {
 	const tapeItems = institutions.concat(institutions)
 
 	return (
-		<div className="w-full h-auto bg-[#0a0f1f] overflow-hidden py-6 bg-transparent px-10">
+		<div className="w-full h-auto bg-[#0a0f1f] overflow-hidden py-6 bg-transparent px-10 border-b-1 border-white/50">
 			<div className="flex animate-scroll whitespace-nowrap font-bold w-max">
 			{[...tapeItems, ...tapeItems].map((bank, i) => (
 				<div className="invert mx-10 flex-none flex items-center" key={`${bank.name}-${i}`}>
