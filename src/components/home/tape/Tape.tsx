@@ -17,43 +17,53 @@ export default function Tape() {
 	const institutions = [
 		{
 			name: "American Express",
-			logo: amex 
+			logo: amex, 
+			link: "https://www.americanexpress.com/" 
 		},
 		{
 			name: "Bank of America",
-			logo: bofa
+			logo: bofa,
+			link: "https://www.bankofamerica.com"
 		},
 		{
 			name: "Venmo",
-			logo: venmo
+			logo: venmo,
+			link: "https://www.venmo.com"
 		},
 		{
 			name: "Discover",
-			logo: discover
+			logo: discover,
+			link: "https://www.discover.com"
 		},
 		{
 			name: "Goldman Sachs",
-			logo: goldman
+			logo: goldman,
+			link: "https://www.goldmansachs.com"
 		},
 		{
 			name: "JPMorgan & Chase",
-			logo: chase
+			logo: chase,
+			link: "https://www.chase.com",
 		},
 		{
 			name: "Barclays",
-			logo: barclays
+			logo: barclays,
+			link: "https://www.barclays.com"
 		},
 		{
 			name: "Wells Fargo",
-			logo: wellsfargo
+			logo: wellsfargo,
+			link: "https://www.wellsfargo.com"
 		},
 		{
 			name: "Deutsche Bank",
-			logo: deutsche
+			logo: deutsche,
+			link: "https://www.db.com"
 		},
 		{
 			name: "Axis Bank",
-			logo: axis
+			logo: axis,
+			link: "https://www.axisbank.com"
 		},
 	]
 
@@ -64,13 +74,15 @@ export default function Tape() {
 			<div className="flex animate-scroll whitespace-nowrap font-bold w-max">
 			{[...tapeItems, ...tapeItems].map((bank, i) => (
 				<div className="invert mx-10 flex-none flex items-center" key={`${bank.name}-${i}`}>
-					<Image
-						src={bank.logo}
-						alt={bank.name}
-						width={LOGO_WIDTH}
-						height={LOGO_HEIGHT}
-						style={{ height: LOGO_HEIGHT, width: "auto" }}
-					/>
+					<a href={bank.link} target="_blank">
+						<Image
+							src={bank.logo}
+							alt={bank.name}
+							width={LOGO_WIDTH}
+							height={LOGO_HEIGHT}
+							style={{ height: LOGO_HEIGHT, width: "auto" }}
+						/>
+					</a>
 				</div>
 			))}
 			</div>
