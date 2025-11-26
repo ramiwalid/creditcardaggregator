@@ -8,10 +8,10 @@ import chase from "public/chase.svg";
 import barclays from "public/barclays.svg";
 import wellsfargo from "public/wellsfargo.svg";
 import deutsche from "public/deutschebank.svg";
+import axis from "public/axisbank.svg";
 
-// Tweak these constants to change the logo footprint across the tape
 const LOGO_WIDTH = 150
-const LOGO_HEIGHT = 50
+const LOGO_HEIGHT = 70
 
 export default function Tape() {
 	const institutions = [
@@ -50,7 +50,11 @@ export default function Tape() {
 		{
 			name: "Deutsche Bank",
 			logo: deutsche
-		}
+		},
+		{
+			name: "Axis Bank",
+			logo: axis
+		},
 	]
 
 	const tapeItems = institutions.concat(institutions)
