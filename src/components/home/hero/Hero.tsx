@@ -16,7 +16,7 @@ export default function Hero() {
 		  </h1>
 		  <p className="mt-4 text-sm text-white/60 sm:text-base">
 		    Track balances, utilization, and due dates across Amex, Chase,
-		    Apple, and more—without opening five different banking apps.
+		    Apple, and more, without opening five different banking apps.
 		  </p>
 
 		  <div className="mt-6 flex gap-3 justify-center font-bold">
