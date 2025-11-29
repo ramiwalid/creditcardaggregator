@@ -13,15 +13,11 @@ const merriweather = Merriweather({
 });
 
 export default function Mission() {
-	const [expanded, setExpanded] = useState(false);
-	const divRef = useRef<HTMLDivElement | null>(null);
+	const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
 
-	const handleClick = () => {
-		setExpanded(true);
-
-		if (divRef.current) {
-			divRef.current.style.minHeight = "300px";
-		};
+	function handleClick (index: number) {
+		setExpandedIndex(prev => prev === index ? null : index
+				);
 	};
 
 	const level_up = [
@@ -41,9 +37,9 @@ export default function Mission() {
 				Time is money, and we don't want you to waste yours
 			</p>
 			<div className="grid grid-cols-2 mt-10 bg-gradient-to-br from-[#0b0f18] via-[#131a2d] to-[#3b1d63] w-5/6 mx-auto">
-				<div className="grid grid-rows-4 col-span-1">
+				<div className="flex flex-col col-span-1">
 					{level_up.map((reason, i) => (
-						<button onClick={handleClick} key={i}><div className="flex justify-between border-t border-b rounded-sm border-white/50 p-3 rows-span-1 text-start hover:cursor-pointer text-white/70 hover:text-white" ref={divRef}>
+						<button onClick={() => handleClick(i)} key={i}><div className={`flex justify-between border-t border-b rounded-sm border-white/50 p-3 rows-span-1 text-start hover:cursor-pointer text-white/70 hover:text-white transition-all duration-300 overflow-hidden ${expandedIndex === i ? "h-40" : "h-18"}`}>
 							<p className={`${merriweather.className} font-bold py-2`}>{reason}</p>
 							<p className="content-center text-3xl text-pink-400">+</p>
 						</div></button>
