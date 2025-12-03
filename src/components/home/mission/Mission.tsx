@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from "react";
 import { Quanta } from "./Quanta"
 import { Lexend, Merriweather } from "next/font/google"
+import shield from "public/shield-lock-fill.svg";
+import Image from "next/image";
 
 const lexend = Lexend({
 	weight: ['200', '300', '400', '700']
@@ -21,10 +23,23 @@ export default function Mission() {
 	};
 
 	const level_up = [
-		"Your privacy and security matters to us",
-		"Trusted by countless financial institutions worldwide",
-		"Pay your bills in a matter of seconds with Quanta",
-		"See all of your credit cards, all from one dashboard"
+		{
+			title: "Your privacy and security matters to us",
+			subtitle: "Your data stays yours - protected with encrypted connections and secure authorization. Every. Single. Time.",
+			image: shield
+		},
+		{
+			title: "Trusted by countless financial institutions worldwide",
+			subtitle: "Built on industry-standard financial APIs and protocols, ensuring reliability at scale." 
+		},
+		{
+			title: "Pay your bills in a matter of seconds with Quanta",
+			subtitle: "A clean, fast, and intuitive way to manage payments without the usual friction." 
+		},
+		{
+			title: "See all of your credit cards, all from one dashboard",
+			subtitle: "Every balance, every card, every update - finally, all in one place." 
+		}
 	];
 
 	return (
@@ -39,11 +54,18 @@ export default function Mission() {
 			<div className="grid grid-cols-2 mt-10 bg-gradient-to-br from-[#0b0f18] via-[#131a2d] to-[#3b1d63] w-5/6 mx-auto">
 				<div className="flex flex-col col-span-1">
 					{level_up.map((reason, i) => (
-						<button onClick={() => handleClick(i)} key={i}><div className={`flex justify-between border-t border-b rounded-sm border-white/50 p-3 rows-span-1 text-start hover:cursor-pointer text-white/70 hover:text-white transition-all duration-300 overflow-hidden ${expandedIndex === i ? "h-40" : "h-18"}`}>
-							<p className={`${merriweather.className} font-bold py-2`}>{reason}</p>
-							<p className="content-center text-3xl text-pink-400">+</p>
+						<button onClick={() => handleClick(i)} key={i}><div className={`border-t border-b rounded-sm border-white/50 p-3 rows-span-1 text-start hover:cursor-pointer hover:text-white transition-all duration-300 overflow-hidden ${expandedIndex === i ? "h-fit text-white" : "h-18 text-white/70"}`}>
+							<div className="flex min-w-full justify-between">
+								<p className={`${merriweather.className} font-bold py-2`}>{reason.title}</p>
+								<p className="content-center text-3xl text-pink-400">+</p>
+							</div>
+							<div className={`${expandedIndex === i ? "transition-all duration-300 block" : "hidden"} overflow-hidden`} key={i}>
+								<p className="text-white/70 pb-3">{reason.subtitle}</p>
+							</div>
 						</div></button>
 					))}
+				</div>
+				<div className="text-sky-400 mx-auto">
 				</div>
 			</div>
 		</div>
