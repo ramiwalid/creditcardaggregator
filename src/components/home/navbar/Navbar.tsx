@@ -1,4 +1,5 @@
 import { CiCreditCard2 } from "react-icons/ci";
+import Link from "next/link";
 
 export default function Navbar() {
 	return (
@@ -19,9 +20,9 @@ export default function Navbar() {
 				<button className="">
 					Log In	
 				</button>
-				<button className="border px-3 py-1 rounded-xl">
+				<Link href='/auth/signup'><button className="border px-3 py-1 rounded-xl hover:cursor-pointer">
 					Sign Up	
-				</button>
+				</button></Link>
 			</div>
 		</div>
 	)

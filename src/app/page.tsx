@@ -1,4 +1,4 @@
-import Navbar from "@/components/home/Navbar";
+import Navbar from "@/components/home/navbar/Navbar";
 import Hero from "@/components/home/hero/Hero";
 import Demo from "@/components/home/demo/Demo";
 import Tape from "@/components/home/tape/Tape";
