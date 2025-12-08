@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google"
+import Link from "next/link";
 import { FaAngleRight } from "react-icons/fa"; 
 
 const inter = Inter({
@@ -30,6 +31,7 @@ export default function RightSideSignUp() {
 					<button className="bg-[#11152a] justify-center border rounded-xl p-3 min-w-full font-bold hover:cursor-pointer hover:bg-[#11152a]/90">Create Account</button>
 					<FaAngleRight size={20} />
 				</div>
+				<h1 className="text-center font-semibold mt-2">Already have an account? <Link href='/auth/login'><span className="underline font-semibold hover:cursor-pointer hover:text-black/50">Sign in</span></Link></h1>
 			</div>
 		</div>
 	)
