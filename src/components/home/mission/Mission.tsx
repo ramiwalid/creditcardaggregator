@@ -54,13 +54,13 @@ export default function Mission() {
 			<div className="grid grid-cols-2 mt-10 bg-gradient-to-br from-[#0b0f18] via-[#131a2d] to-[#3b1d63] w-5/6 mx-auto">
 				<div className="flex flex-col col-span-1">
 					{level_up.map((reason, i) => (
-						<button onClick={() => handleClick(i)} key={i}><div className={`border-t border-b rounded-sm border-white/50 p-3 rows-span-1 text-start hover:cursor-pointer hover:text-white transition-all duration-400 overflow-hidden ${expandedIndex === i ? "h-29 text-white" : "h-18 text-white/70"}`}>
+						<button onClick={() => handleClick(i)} key={i}><div className={`border-t border-b rounded-sm border-white/50 p-3 rows-span-1 text-start hover:cursor-pointer hover:text-white transition-discrete duration-500 ease-in-out overflow-hidden ${expandedIndex === i ? "h-29 text-white" : "h-18 text-white/70"}`}>
 							<div className="flex min-w-full justify-between">
 								<p className={`${merriweather.className} font-bold py-2`}>{reason.title}</p>
 								<p className="content-center text-3xl text-pink-400">+</p>
 							</div>
-							<div className={`${expandedIndex === i ? "block" : "hidden"} overflow-hidden`} key={i}>
-								<p className="text-white/70 pt-1 pb-3">{reason.subtitle}</p>
+							<div className={`${expandedIndex === i ? "block" : "hidden"}`} key={i}>
+								<div className="animate__animated animate__fadeInUp delay-500 duration-300 text-white/70 pt-1 pb-3">{reason.subtitle}</div>
 							</div>
 						</div></button>
 					))}
