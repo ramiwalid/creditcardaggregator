@@ -12,7 +12,7 @@ from routes import signup
 
 app = FastAPI()
 
-app.include_router(signup.router)
+app.include_router(signup.router, prefix="/auth")
 
 origins = [
         "http://localhost:3000",
