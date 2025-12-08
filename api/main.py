@@ -30,7 +30,3 @@ app.add_middleware(
 @app.get('/home')
 def home():
     return {"hello": "we are in the home page"}
-
-@app.get('/signup')
-def sign_up_users():
-    return signup

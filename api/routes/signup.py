@@ -39,8 +39,9 @@ def add_user_db(email: str, password: str, username: str):
                 "username": username
                 }
 
-@router.get('/signup', response_model=UserCreate)
-def sign_up_user(user: UserCreate):
+
+@router.post('/signup', response_model=Token)
+async def send_token(user: UserCreate):
     existing_user = check_user_exists(user.email)
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
@@ -48,9 +49,8 @@ def sign_up_user(user: UserCreate):
     print(user.email)
     user_password = hash_password(user.password)
     add_user_db(user.email, user_password, user.username)
+    
 
-@router.post('/signup', response_model=Token)
-async def send_token(user: UserCreate):
     access_token_expires = timedelta(minutes=30)
     access_token = jwt.encode(
             {"sub": user.email, "exp": datetime.utcnow() + access_token_expires},
