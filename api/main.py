@@ -6,66 +6,31 @@ from datetime import datetime, timedelta
 from jose import JWTError, jwt
 from passlib.context import CryptContext
 from pydantic.types import SecretType 
-
-SECRET_KEY = "6657e111c27836710d91f4aa9ea2240381f96ea5ed1efe3ef7b4b36c38673f3b"
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30
-
-db = {
-        "rami": {
-            "email": "rami@gmail.com",
-            "hashed_password": "",
-            "disabled": False
-        }
-}
-
-class Token(BaseModel):
-    access_token: str
-    token_type: str
-
-class TokenData(BaseModel):
-    username: str 
-
-class User(BaseModel):
-    username: str
-    email: str 
-    disabled: bool 
-
-class UserInDB(User):
-    hashed_password: str
-
-pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-oauth_2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+from login import handle_login
+from fastapi.middleware.cors import CORSMiddleware
+from routes import signup
 
 app = FastAPI()
 
-def verify_password(plain_password, hashed_password):
-    return pwd_context.verify(plain_password, hashed_password)
+app.include_router(signup.router)
 
-def get_password_hash(password):
-    return pwd_context.hash(password)
+origins = [
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+]
 
-def get_user(db, username: str):
-    if username in db:
-        user_data = db[username]
-        return UserInDB(**user_data) 
+app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+)
 
-def authenticate_user(db, username: str, password: str):
-    user = get_user(db, username)
-    if not user:
-        return False
-    if not verify_password(password, user.hashed_password):
-        return False
+@app.get('/home')
+def home():
+    return {"hello": "we are in the home page"}
 
-    return user
-
-def create_access_token(data: dict, expires_delta: timedelta):
-    to_encode = data.copy()
-    if expires_delta:
-        expire = datetime.utcnow() + expires_delta
-    else:
-        expire = datetime.utcnow() + timedelta(minutes=15)
-
-    to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+@app.get('/signup')
+def sign_up_users():
+    return signup
