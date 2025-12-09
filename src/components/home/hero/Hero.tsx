@@ -1,3 +1,4 @@
+import Link from "next/link"
 import FloatingCardBackground from "./FloatingCardBackground"
 
 export default function Hero() {
@@ -20,9 +21,9 @@ export default function Hero() {
 		  </p>
 
 		  <div className="mt-6 flex gap-3 justify-center font-bold">
-		    <button className="rounded-full bg-[#FF2E9A] px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-[#FF2E9A55]">
+		    <Link href='/auth/signup'><button className="rounded-full bg-[#FF2E9A] px-5 py-2.5 text-sm font-medium text-white shadow-lg shadow-[#FF2E9A55] hover:cursor-pointer hover:bg-[#FF2E9A]/80">
 		      Get started
-		    </button>
+		    </button></Link>
 		    <button className="rounded-full border border-white/20 px-5 py-2.5 text-sm text-white/80">
 		      View demo
 		    </button>
