@@ -12,8 +12,6 @@ from routes import signup
 
 app = FastAPI()
 
-app.include_router(signup.router, prefix="/auth")
-
 origins = [
         "http://localhost:3000",
         "http://127.0.0.1:3000",
@@ -30,3 +28,6 @@ app.add_middleware(
 @app.get('/home')
 def home():
     return {"hello": "we are in the home page"}
+
+app.include_router(signup.router, prefix="/auth")
+

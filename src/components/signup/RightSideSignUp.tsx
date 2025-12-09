@@ -34,11 +34,11 @@ export default function RightSideSignUp() {
 			const responseData = await response.json()
 
 			if (!response.ok) {
-				const errorData = await response.json();
-				throw new Error(errorData.detail || 'Account creation failed.');
+				throw new Error(response.statusText);
 			}
 
-			localStorage.setItem('authToken', responseData.access_token);
+			const auth_token = responseData.access_token;
+			localStorage.setItem('authToken', auth_token);
 		} catch (error) {
 			setError('Failed creating account');
 		}
