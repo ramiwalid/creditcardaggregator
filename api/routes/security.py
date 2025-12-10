@@ -1,4 +1,5 @@
 from warnings import deprecated
+from dotenv import load_dotenv
 from fastapi import Depends, HTTPException
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
@@ -7,10 +8,11 @@ from datetime import datetime, timedelta
 from routes.database import users 
 from sqlalchemy.orm import Session
 from routes.database.users import get_db, get_user_db
+import os
 
-SECRET_KEY = "e429884f6fdb7221c78261b4a7e9d1e214cc45ec5ffb142b6f12b9bf7f5b766c" 
-ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 30 
+SECRET_KEY = os.environ.get("SECRET_KEY") 
+ALGORITHM = os.environ.get("ALGORITHM")
+ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES") 
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated='auto')
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl='token')
@@ -36,14 +38,16 @@ def generate_access_token(data: dict, expires_delta: timedelta | None = None):
         expire = datetime.utcnow() + timedelta(minutes=15)
 
     to_encode.update({"exp": expire})
-    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
-    return encoded_jwt
+    if SECRET_KEY is not None and ALGORITHM is not None:
+        encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+        return encoded_jwt
 
 async def get_current_user(token: str = Depends(oauth_2_scheme)):
     credential_exception = HTTPException(status_code=401, detail="Could not validate credentials", headers={"WWW-Authenticate": "Bearer"})
 
     try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        if SECRET_KEY is not None and ALGORITHM is not None:
+            payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
 
     except JWTError:
         raise credential_exception
