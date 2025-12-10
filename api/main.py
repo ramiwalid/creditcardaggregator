@@ -1,6 +1,13 @@
 from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from routes import signup
+from dotenv import load_dotenv
+from routes.database.users import engine, Base
+from routes.schemas import User
+
+load_dotenv()
+
+Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 

@@ -5,6 +5,8 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt 
 from datetime import datetime, timedelta
 from routes.database import users 
+from sqlalchemy.orm import Session
+from routes.database.users import get_db, get_user_db
 
 SECRET_KEY = "e429884f6fdb7221c78261b4a7e9d1e214cc45ec5ffb142b6f12b9bf7f5b766c" 
 ALGORITHM = "HS256"
@@ -19,9 +21,9 @@ def verify_password(plain_password, hashed_password):
 def hash_password(password: str) -> str:
     return pwd_context.hash(password)
 
-def authenticate_user(db: dict, email: str, password: str):
+def authenticate_user(email: str, password: str, db: Session = Depends(get_db)):
     user = users.get_user_db(db, email)
-    if not users.check_user_exists(db, email):
+    if not user: 
         return False
     if user is not None and not verify_password(password, user.hashed_password):
         return False
