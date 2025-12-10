@@ -12,6 +12,7 @@ export default function RightSideSignUp() {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [username, setUsername] = useState('');
+	const [visible, setVisible] = useState(false);
 	const [error, setError] = useState('');
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -46,10 +47,10 @@ export default function RightSideSignUp() {
 
 	return (
 		<div>
-			<div className="text-black absolute top-0 right-0 p-3 max-w-full flex justify-between items-center hover:cursor-pointer hover:text-black/50">
+			<Link href='/auth/login'><div className="text-black absolute top-0 right-0 p-3 max-w-full flex justify-between items-center hover:cursor-pointer hover:text-black/50">
 				<p>Log In</p>
 				<FaAngleRight size={25}/>
-			</div>
+			</div></Link>
 			<div className={`${inter.className} mx-auto mt-55 w-3/5 text-black`}>
 				<div className="block mx-auto">
 					<form onSubmit={handleSubmit}>
