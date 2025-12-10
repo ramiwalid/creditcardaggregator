@@ -3,12 +3,14 @@ import { Inter } from "next/font/google"
 import Link from "next/link";
 import { FaAngleRight } from "react-icons/fa"; 
 import React, { use, useState } from 'react';
+import { useRouter } from "next/navigation";
 
 const inter = Inter({
 	weight: '300',
 });
 
 export default function RightSideSignUp() {
+	const router = useRouter()
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [username, setUsername] = useState('');
@@ -40,6 +42,7 @@ export default function RightSideSignUp() {
 
 			const auth_token = responseData.access_token;
 			localStorage.setItem('authToken', auth_token);
+			router.push('/');
 		} catch (error) {
 			setError('Failed creating account');
 		}
