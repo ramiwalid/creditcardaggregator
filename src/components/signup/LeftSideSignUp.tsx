@@ -17,9 +17,6 @@ export default function LeftSideSignUp() {
 					<FaAngleDown size={20} />
 				</div>
 			</div>
-			<div className="col-span-1 bg-white min-h-screen">
-				<p>Hello</p>
-			</div>
 		</div>
 	)
 }
