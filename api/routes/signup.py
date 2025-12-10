@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from routes import schemas, security
 from routes.database import users
-from routes.database.users import add_user_db, get_db, get_user_db, show_db
+from routes.database.users import add_user_db, get_db, get_user_db
 
 router = APIRouter()
 
