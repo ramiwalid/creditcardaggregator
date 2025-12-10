@@ -1,4 +1,4 @@
-from api.routes import schemas
+from routes import schemas
 
 def check_user_exists(db: dict, email: str) -> bool:
     return email in db 

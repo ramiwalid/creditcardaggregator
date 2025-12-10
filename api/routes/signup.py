@@ -8,8 +8,8 @@ from passlib.context import CryptContext
 from jose import jwt
 from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
-from api.routes import schemas, security
-from api.routes.database import users
+from routes import schemas, security
+from routes.database import users
 
 router = APIRouter()
 
@@ -21,14 +21,11 @@ def send_token(user: schemas.UserCreate):
     if existing_user:
         raise HTTPException(status_code=400, detail="User already exists")
 
-    user_password = security.hash_password(user.password) 
+    user_password = security.hash_password(user.password)
     users.add_user_db(db, user.email, user_password, user.username)
     
-    access_token_expires = timedelta(minutes=30)
-    access_token = jwt.encode(
-            {"sub": user.email, "exp": datetime.utcnow() + access_token_expires},
-            security.SECRET_KEY,
-            algorithm="HS256"
-            )
+    print(user_password)
+    print(db)
+    access_token = security.generate_access_token(db)
     
     return {"access_token": access_token, "token_type": "bearer"}

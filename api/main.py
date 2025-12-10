@@ -1,12 +1,4 @@
-from warnings import deprecated
 from fastapi import Depends, FastAPI, HTTPException, status
-from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
-from pydantic import BaseModel
-from datetime import datetime, timedelta
-from jose import JWTError, jwt
-from passlib.context import CryptContext
-from pydantic.types import SecretType 
-from login import handle_login
 from fastapi.middleware.cors import CORSMiddleware
 from routes import signup
 
