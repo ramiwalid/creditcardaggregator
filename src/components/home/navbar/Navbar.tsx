@@ -17,9 +17,9 @@ export default function Navbar() {
 				</div>
 			</div>
 			<div className="flex gap-5 font-bold">
-				<button className="">
+				<Link href='/auth/login'><button className="">
 					Log In	
-				</button>
+				</button></Link>
 				<Link href='/auth/signup'><button className="border px-3 py-1 rounded-xl hover:cursor-pointer">
 					Sign Up	
 				</button></Link>
