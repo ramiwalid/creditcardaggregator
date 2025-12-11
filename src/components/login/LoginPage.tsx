@@ -3,12 +3,14 @@ import React, { useState } from 'react';
 import { CiCreditCard2 } from "react-icons/ci";
 import { Inter } from 'next/font/google';
 import Link from "next/link";
+import { useRouter } from 'next/navigation';
 
 const inter = Inter({
 	weight: '300'
 });
 
 export default function LoginPage() {
+	const router = useRouter();
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState(false);
@@ -37,20 +39,20 @@ export default function LoginPage() {
 			}
 
 			setAuthentication(responseData.access_token === localStorage.auth_token);
-
+			router.push('/');	
 		} catch (error) {
 			setError(true);	
 		}
 	}
 
 	return (
-		<div className={`${inter.className} block mx-auto w-1/4 mt-45`}>
+		<div className={`${inter.className} block mx-auto w-1/5 mt-45`}>
 			<form onSubmit={handleSubmit}>
 				<div className='flex justify-center'>
 					<CiCreditCard2 size={70} />
 </div>
 				<h1 className='text-center font-bold text-3xl'>Sign in to Quanta</h1>
-				<div className='block min-w-fit mt-10'>
+<div className='block min-w-fit mt-10'>
 					<p>Username or email address*</p>
 					<input type='email' placeholder='Email' className='w-full border rounded-xl p-1 pl-3 mt-1' value={email} onChange={e => setEmail(e.target.value)}></input>
 				</div>
