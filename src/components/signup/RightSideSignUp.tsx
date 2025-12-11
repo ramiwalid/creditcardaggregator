@@ -15,7 +15,7 @@ export default function RightSideSignUp() {
 	const [password, setPassword] = useState('');
 	const [username, setUsername] = useState('');
 	const [visible, setVisible] = useState(false);
-	const [error, setError] = useState('');
+	const [error, setError] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -44,7 +44,7 @@ export default function RightSideSignUp() {
 			localStorage.setItem('authToken', auth_token);
 			router.push('/');
 		} catch (error) {
-			setError('Failed creating account');
+			setError(true);
 		}
 	};
 

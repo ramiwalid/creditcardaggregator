@@ -1,9 +1,11 @@
 from fastapi import Depends, FastAPI, HTTPException, status
+from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-from routes import signup
+from routes import signup, login
 from dotenv import load_dotenv
 from routes.database.users import engine, Base
-from routes.schemas import User
+from routes.database import models
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -29,4 +31,5 @@ def home():
     return {"hello": "we are in the home page"}
 
 app.include_router(signup.router, prefix="/auth")
+app.include_router(login.router, prefix="/auth")
 
