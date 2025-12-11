@@ -53,7 +53,7 @@ def verify_user(db: Session, email: str, password: str) -> models.User:
     user = get_user_db(db, email=email)
 
     if not user:
-        raise HTTPException(status_code=400, detail="User not found bro")
+        raise HTTPException(status_code=400, detail="User not found")
     if not security.verify_password(password, user.hashed_password):
         raise HTTPException(status_code=400, detail="Password is incorrect")
 
