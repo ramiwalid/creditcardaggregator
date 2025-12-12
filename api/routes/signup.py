@@ -24,6 +24,9 @@ def send_token(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=400, detail="User already exists")
 
+    if not security.check_password(password=user.password):
+        raise HTTPException(status_code=400, detail="Password is not valid")
+
     user_password = security.hash_password(user.password)
     new_user = add_user_db(
             db=db,

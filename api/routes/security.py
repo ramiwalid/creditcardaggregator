@@ -7,6 +7,7 @@ from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 import os
+import re
 
 load_dotenv()
 
@@ -16,6 +17,18 @@ ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES")
 
 pwd_context = CryptContext(schemes=['argon2'], deprecated='auto')
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl='token')
+
+def check_password(password: str) -> bool:
+    if len(password) >= 15:
+        return True
+        
+    valid = False
+
+    pattern = re.compile(r'^(?=.*[A-Z])(?=.*[0-9])[\s\S]{8,}$')
+    if pattern.findall(password):
+        valid = True
+
+    return valid 
 
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
