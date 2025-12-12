@@ -14,7 +14,9 @@ export default function LoginPage() {
 	const [email, setEmail] = useState('');
 	const [password, setPassword] = useState('');
 	const [error, setError] = useState(false);
-	const [authenticated, setAuthentication] = useState(false);
+	const [emailError, setEmailError] = useState(false);
+	const [passwordError, setPasswordError] = useState(false);
+	const [authentication, setAuthentication] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 		e.preventDefault();
@@ -34,14 +36,23 @@ export default function LoginPage() {
 			});
 			const responseData = await response.json()
 
+			setEmailError(false);
+			setPasswordError(false);
+
 			if (!response.ok) {
+				if (responseData.detail == "User not found") {
+					setEmailError(true);
+				}
+				else if (responseData.detail == "Password is incorrect") {
+					setPasswordError(true);
+				}
 				throw new Error(response.statusText);
 			}
 
 			setAuthentication(responseData.access_token === localStorage.auth_token);
 			router.push('/');	
 		} catch (error) {
-			setError(true);	
+			console.log("Account log in failed.");
 		}
 	}
 
@@ -54,11 +65,13 @@ export default function LoginPage() {
 				<h1 className='text-center font-bold text-3xl'>Sign in to Quanta</h1>
 <div className='block min-w-fit mt-10'>
 					<p>Username or email address*</p>
-					<input type='email' placeholder='Email' className='w-full border rounded-xl p-1 pl-3 mt-1' value={email} onChange={e => setEmail(e.target.value)}></input>
+					<input type='text' placeholder='Email' className={`w-full border rounded-xl p-1 pl-3 mt-1 ${emailError ? "border-red-400 border-2" : "border" }`} value={email} onChange={e => setEmail(e.target.value)}></input>
+					<p className={`${emailError ? "text-xs text-red-400 font-bold pt-3 pl-1" : "hidden"}`}>Username or email is invalid. Please try again.</p>
 				</div>
 				<div className='block min-w-fit mt-5'>
 					<p>Password*</p>
-					<input type='password' placeholder='Password' className='w-full border rounded-xl p-1 pl-3 mt-1' value={password} onChange={e => setPassword(e.target.value)}></input>
+					<input type='password' placeholder='Password' className={`w-full border rounded-xl p-1 pl-3 mt-1 ${passwordError ? "border-red-400 border-2" : "border"}`} value={password} onChange={e => setPassword(e.target.value)}></input>
+					<p className={`${passwordError ? "text-xs text-red-400 font-bold pt-3 pl-1" : "hidden"}`}>Invalid password. Please try again.</p>
 				</div>
 				<div>
 					<button className='bg-green-700 min-w-full rounded-xl px-3 py-2 font-bold hover:cursor-pointer hover:bg-green-700/80 mt-5'>Log In</button>
