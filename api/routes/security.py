@@ -30,6 +30,18 @@ def check_password(password: str) -> bool:
 
     return valid 
 
+def check_username(username: str) -> bool:
+    valid = False
+
+    pattern = re.compile(r'^[a-zA-Z0-9][a-zA-Z0-9]{2,}$')
+    if pattern.findall(username):
+        if "--" not in username:
+            valid = True
+        else:
+            valid = False
+
+    return valid
+
 def verify_password(plain_password, hashed_password):
     return pwd_context.verify(plain_password, hashed_password)
 

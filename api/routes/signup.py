@@ -22,10 +22,13 @@ router = APIRouter()
 def send_token(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = get_user_db(db, email=user.email)
     if db_user:
-        raise HTTPException(status_code=400, detail="User already exists")
+        raise HTTPException(status_code=400, detail="Email taken")
 
     if not security.check_password(password=user.password):
-        raise HTTPException(status_code=400, detail="Password is not valid")
+        raise HTTPException(status_code=400, detail="Invalid password")
+
+    if not security.check_username(username=user.username):
+        raise HTTPException(status_code=400, detail="Invalid username")
 
     user_password = security.hash_password(user.password)
     new_user = add_user_db(
