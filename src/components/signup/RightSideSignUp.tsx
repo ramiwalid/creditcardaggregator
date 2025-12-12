@@ -83,13 +83,13 @@ export default function RightSideSignUp() {
 							<p>Password*</p>
 							<input type="password" placeholder="Password" className={`w-full border rounded-xl p-1 pl-3 mt-1 ${passwordError ? "border-red-400 border-2" : "border-black"}`} value={password} onChange={e => setPassword(e.target.value)}></input>
 							<p className="text-xs text-black/70 pt-3 pl-1">Password should be at least 15 characters OR 8 characters including a number and an uppercase letter</p>
-							<p className={`${passwordError ? "text-xs text-red-400 font-bold pt-3 pl-1" : "hidden"}`}>Invalid password. Follow rules above</p>
+							<p className={`${passwordError ? "text-xs text-red-400 font-bold pt-3 pl-1" : "hidden"}`}>Invalid password. Must meet requirements above.</p>
 						</div>
 						<div className="mt-5">
 							<p>Username*</p>
 							<input type="text" placeholder="Username" className={`w-full border rounded-xl p-1 pl-3 mt-1 ${usernameError ? "border-red-400 border-2" : "border-black"}`} value={username} onChange={e => setUsername(e.target.value)}></input>
 							<p className="text-xs text-black/70 pt-3 pl-1">Username may only alphanumeric characters or single hyphens, must be at least 3 characters long, and cannot begin with a hyphen.</p>
-							<p className={`${usernameError ? "text-xs text-red-400 font-bold pt-3 pl-1" : "hidden"}`}>Invalid username. Follow rules above</p>
+							<p className={`${usernameError ? "text-xs text-red-400 font-bold pt-3 pl-1" : "hidden"}`}>Invalid username. Must meet requirements above</p>
 						</div>
 						<div className="flex text-white mt-5">
 							<button className="bg-[#11152a] justify-center border rounded-xl p-3 min-w-full font-bold hover:cursor-pointer hover:bg-[#11152a]/90" type="submit">Create Account</button>
