@@ -35,7 +35,12 @@ def get_db():
         db.close()
 
 def get_user_db(db: Session, email: str):
-    return db.query(models.User).filter(models.User.email == email).first()
+    user = db.query(models.User).filter(models.User.email == email).first()
+
+    if not user:
+        user = db.query(models.User).filter(models.User.username == email).first()
+
+    return user
 
 def add_user_db(db: Session, email: str, password: str, username: str):
     db_user = models.User(
