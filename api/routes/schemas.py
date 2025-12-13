@@ -18,3 +18,9 @@ class Token(BaseModel):
 
 class UserInDb(UserCreate):
     hashed_password:str
+
+class ResetPassword(BaseModel):
+    email: str
+
+class ResetPasswordSuccess(BaseModel):
+    message: str

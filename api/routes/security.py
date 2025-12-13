@@ -6,6 +6,8 @@ from passlib.context import CryptContext
 from jose import JWTError, jwt 
 from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
+from email.message import EmailMessage
+import smtplib
 import os
 import re
 
@@ -14,6 +16,7 @@ load_dotenv()
 SECRET_KEY = os.environ.get("SECRET_KEY") 
 ALGORITHM = os.environ.get("ALGORITHM")
 ACCESS_TOKEN_EXPIRE_MINUTES = os.environ.get("ACCESS_TOKEN_EXPIRE_MINUTES") 
+emailPass = os.environ.get('PASSWORD')
 
 pwd_context = CryptContext(schemes=['argon2'], deprecated='auto')
 oauth_2_scheme = OAuth2PasswordBearer(tokenUrl='token')
@@ -69,3 +72,27 @@ async def get_current_user(token: str = Depends(oauth_2_scheme)):
 
     except JWTError:
         raise credential_exception
+
+def sendEmail(to_email: str, reset_url: str):
+    msg = EmailMessage()
+    msg['Subject'] = 'Reset your password.'
+    msg['From'] = 'ramiwalid5@gmail.com'
+    msg['To'] = to_email
+    msg.set_content(f"Reset your password at this link: {reset_url}")
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        if emailPass is not None:
+            smtp.login('ramiwalid5@gmail.com', emailPass)
+            smtp.send_message(msg)
+
+def generate_password_token(user_id: str, minutes_to_expire: int=15):
+    data = {
+            "sub": user_id,
+            "token_type": "password_reset",
+            "iat": datetime.utcnow(),
+            "exp": datetime.utcnow() + timedelta(minutes=minutes_to_expire)
+            }
+
+    if SECRET_KEY is not None and ALGORITHM is not None:
+        encoded_jwt = jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+        return encoded_jwt

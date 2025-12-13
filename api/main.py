@@ -1,7 +1,8 @@
+from sys import prefix
 from fastapi import Depends, FastAPI, HTTPException, status
 from contextlib import asynccontextmanager
 from fastapi.middleware.cors import CORSMiddleware
-from routes import signup, login
+from routes import signup, login, forgotpassword
 from dotenv import load_dotenv
 from routes.database.users import engine, Base
 from routes.database import models
@@ -32,4 +33,4 @@ def home():
 
 app.include_router(signup.router, prefix="/auth")
 app.include_router(login.router, prefix="/auth")
-
+app.include_router(forgotpassword.router, prefix="/auth")
