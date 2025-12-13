@@ -1,8 +1,13 @@
 import { CiCreditCard2 } from "react-icons/ci"
+import { Inter } from "next/font/google"
+
+const inter = Inter({
+	weight: '300'
+});
 
 export default function ForgotPassword() {
 	return (
-		<div className="mx-auto mt-45 min-h-screen w-1/5">
+		<div className={`${inter.className} mx-auto mt-45 min-h-screen w-1/5`}>
 			<div className="flex justify-center">
 				<CiCreditCard2 size={70} />
 			</div>

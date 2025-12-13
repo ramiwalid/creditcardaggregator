@@ -71,7 +71,7 @@ export default function LoginPage() {
 				<div className='block min-w-fit mt-5'>
 					<div className='flex justify-between'>
 						<p>Password*</p>
-						<Link href={'/auth/forgotpassword'} target='_blank'><p className='underline text-blue'>Forgot Password?</p></Link>
+						<Link href={'/auth/forgotpassword'} target='_blank'><p className='underline hover:cursor-pointer hover:text-white/80'>Forgot Password?</p></Link>
 					</div>
 					<input type='password' placeholder='Password' className={`w-full border rounded-xl p-1 pl-3 mt-1 ${passwordError ? "border-red-400 border-2" : "border"}`} value={password} onChange={e => setPassword(e.target.value)}></input>
 					<p className={`${passwordError ? "text-xs text-red-400 font-bold pt-3 pl-1" : "hidden"}`}>Invalid password. Please try again.</p>
