@@ -14,7 +14,7 @@ def verifyEmail(user: schemas.ResetPassword, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="User does not exist")
 
     password_token = generate_password_token(str(db_user.id))
-    reset_url = f"http://localhost:3000/auth/forgotpassword/{password_token}"
+    reset_url = f"http://localhost:3000/auth/resetpassword/{password_token}"
 
     sendEmail(user.email, reset_url)
 

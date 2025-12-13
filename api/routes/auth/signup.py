@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 from routes import schemas, security
-from .database.users import add_user_db, get_db, get_user_db
+from ..database.users import add_user_db, get_db, get_user_db
 from dotenv import load_dotenv
 
 load_dotenv()

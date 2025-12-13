@@ -24,3 +24,7 @@ class ResetPassword(BaseModel):
 
 class ResetPasswordSuccess(BaseModel):
     message: str
+
+class SetNewPassword(BaseModel):
+    token: str
+    new_password: str
