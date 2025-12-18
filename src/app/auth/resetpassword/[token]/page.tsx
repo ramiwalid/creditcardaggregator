@@ -4,9 +4,9 @@ import { Inter } from "next/font/google";
 import { CiCreditCard2 } from "react-icons/ci";
 
 interface ResetPasswordPageProps {
-	params: {
+	params: Promise<{
 		token: string;
-	};
+	}>;
 }
 
 const inter = Inter({
@@ -14,7 +14,8 @@ const inter = Inter({
 })
 
 export default function ResetPassword( {params}: ResetPasswordPageProps) {
-	const { token } = params;
+	const resolvedParams = React.use(params);
+	const token = resolvedParams.token;
 	const [password, setPassword] = useState('');
 	const [confirmedPassword, setConfirmedPassword] = useState('');
 	const [passwordsMatch, setPasswordsMatch] = useState(false);
