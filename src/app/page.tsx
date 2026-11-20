@@ -1,26 +1,30 @@
-import Navbar from "@/components/home/navbar/Navbar";
-import Hero from "@/components/home/hero/Hero";
-import Demo from "@/components/home/demo/Demo";
-import Tape from "@/components/home/tape/Tape";
-import Mission from "@/components/home/mission/Mission";
-import 'animate.css';
+import Navbar from "@/components/home/Navbar";
+import Hero from "@/components/home/sections/Hero";
+import Institutions from "@/components/home/sections/Institutions";
+import Features from "@/components/home/sections/Features";
+import HowItWorks from "@/components/home/sections/HowItWorks";
+import Security from "@/components/home/sections/Security";
+import About from "@/components/home/sections/About";
+import FAQ from "@/components/home/sections/FAQ";
+import Contact from "@/components/home/sections/Contact";
+import Footer, { FinalCTA } from "@/components/home/sections/Footer";
 
 export default function Home() {
 	return (
-		<div className="scrollbar-width-none">
+		<div className="overflow-x-clip">
 			<Navbar />
-			<Hero />
-			<Demo />
-			<div className="relative bg-[#11152a]">
-				<div className="relative w-full overflow-hidden py-6">
-					<div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-r from-[#0a0f1f] to-transparent">
-					</div>
-					<div className="pointer-events-none absolute inset-y-0 left-0 w-20 bg-gradient-to-1 from-[#0a0f1f] to-transparent">
-					</div>
-					<Tape />
-					<Mission />
-				</div>
-			</div>
+			<main>
+				<Hero />
+				<Institutions />
+				<Features />
+				<HowItWorks />
+				<Security />
+				<About />
+				<FAQ />
+				<Contact />
+				<FinalCTA />
+			</main>
+			<Footer />
 		</div>
-	)
+	);
 }

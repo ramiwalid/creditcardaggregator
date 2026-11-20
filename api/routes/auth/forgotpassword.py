@@ -1,27 +1,31 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, BackgroundTasks, Depends
 from sqlalchemy.orm import Session
-from routes.database import models
-from routes.security import generate_password_token, sendEmail
-from routes.database.users import get_db, get_user_db, reset_password_add_db
-from routes import schemas
+
+from routes import schemas, security
+from routes.database.users import get_db, get_user_by_email
 
 router = APIRouter()
 
-@router.post('/forgotpassword', response_model=schemas.ResetPasswordSuccess)
-def verifyEmail(user: schemas.ResetPassword, db: Session = Depends(get_db)):
-    db_user = get_user_db(db, user.email) 
+GENERIC_RESPONSE = {
+    "message": "If an account exists for that email, a password reset link is on its way."
+}
 
-    if not db_user:
-        raise HTTPException(status_code=400, detail="User does not exist")
 
-    password_token = generate_password_token(str(db_user.id))
-    reset_password_add_db(db, user.email, str(password_token))
+@router.post("/forgotpassword", response_model=schemas.MessageResponse)
+def forgot_password(
+    body: schemas.ForgotPasswordRequest,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+):
+    # Always return the same response so this endpoint can't be used to check
+    # whether an email is registered.
+    user = get_user_by_email(db, body.email)
+    if user is None:
+        return GENERIC_RESPONSE
 
-    reset_url = f"http://localhost:3000/auth/resetpassword/{password_token}"
+    token = security.generate_password_token(user.id, user.hashed_password)
+    reset_url = f"{security.FRONTEND_URL}/auth/resetpassword/{token}"
 
-    sendEmail(user.email, reset_url)
-
-    return {
-            "email": user.email,
-            "message": "Password reset link sent!"
-            }
+    # Send after the response so SMTP latency doesn't leak account existence.
+    background_tasks.add_task(security.send_password_reset_email, user.email, reset_url)
+    return GENERIC_RESPONSE

@@ -42,3 +42,14 @@ next-env.d.ts
 
 #Ignore local database file containing user data
 sql_app.db
+!.env.example
+
+# python
+__pycache__/
+*.py[cod]
+.venv/
+api/tests/test.db
+.pytest_cache/
+
+# editor swap files
+*.swp

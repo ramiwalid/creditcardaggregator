@@ -6,7 +6,9 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "api": "cd api && .venv/bin/uvicorn main:app --reload --port 8000",
+    "test:api": "cd api && .venv/bin/python -m pytest tests -q"
   },
   "dependencies": {
     "animate.css": "^4.1.1",
@@ -27,5 +29,8 @@
     "eslint-config-next": "16.0.3",
     "tailwindcss": "^4",
     "typescript": "^5"
+  },
+  "engines": {
+    "node": ">=20.9.0"
   }
 }

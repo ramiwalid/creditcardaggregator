@@ -1,85 +1,90 @@
 "use client";
 import React, { useState } from "react";
-import { Inter } from "next/font/google";
-import { CiCreditCard2 } from "react-icons/ci";
+import Link from "next/link";
+import { FiArrowRight, FiCheckCircle } from "react-icons/fi";
+import AuthShell from "@/components/auth/AuthShell";
+import PasswordChecklist from "@/components/auth/PasswordChecklist";
+import Field, { FormAlert } from "@/components/ui/Field";
+import { Button, ButtonLink } from "@/components/ui/Button";
+import { api, ApiError } from "@/lib/api";
 
 interface ResetPasswordPageProps {
-	params: Promise<{
-		token: string;
-	}>;
+	params: Promise<{ token: string }>;
 }
 
-const inter = Inter({
-	weight: '300'
-})
-
-export default function ResetPassword( {params}: ResetPasswordPageProps) {
-	const resolvedParams = React.use(params);
-	const token = resolvedParams.token;
-	const [password, setPassword] = useState('');
-	const [confirmedPassword, setConfirmedPassword] = useState('');
-	const [passwordsMatch, setPasswordsMatch] = useState(false);
-	const [passwordError, setPasswordError] = useState('');
-
-	const checkPasswords = () => {
-		setPasswordsMatch(password == confirmedPassword);
-	}
+export default function ResetPassword({ params }: ResetPasswordPageProps) {
+	const { token } = React.use(params);
+	const [password, setPassword] = useState("");
+	const [confirmedPassword, setConfirmedPassword] = useState("");
+	const [error, setError] = useState<{ field?: string; message: string } | null>(null);
+	const [done, setDone] = useState(false);
+	const [submitting, setSubmitting] = useState(false);
 
 	const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-		e.preventDefault()
-
-		checkPasswords();
-		if (!passwordsMatch) {
-			throw new Error("Passwords don't match");
+		e.preventDefault();
+		setError(null);
+		if (password !== confirmedPassword) {
+			setError({ field: "confirm", message: "Passwords don't match." });
+			return;
 		}
-
-		const payload = {
-			password: password,
-			password_token: token 
-}
-
+		setSubmitting(true);
 		try {
-			const response = await fetch('http://localhost:8000/auth/resetpassword', {
-				method: 'POST',
-				headers: {'Content-Type': 'application/json'},
-				body: JSON.stringify(payload),
-			});
-
-			const responseData = await response.json();
-
-			if (!response.ok) {
-				setPasswordError(responseData.detail);
-				throw new Error(response.statusText);
-			}
-
-		} catch(error) {
-			console.log("Couldn't update password");
+			await api.resetPassword(decodeURIComponent(token), password);
+			setDone(true);
+		} catch (err) {
+			if (err instanceof ApiError) setError({ field: err.field, message: err.message });
+			else setError({ message: "Couldn't update your password. Please try again." });
+		} finally {
+			setSubmitting(false);
 		}
 	};
 
-	return (
-		<div className={`${inter.className} mx-auto mt-55 w-1/5 min-h-screen`}>
-			<div className="flex justify-center">
-				<CiCreditCard2 size={70} />
-			</div>
-			<form onSubmit={handleSubmit}>
-				<div className={`block`}>
-					<h1 className="text-center font-bold text-2xl">Create new password</h1>
-					<p className={`mt-5`}>New Password*</p>
-<input id="password1" type="password" className={`w-full border rounded-xl p-1 pl-3 mt-1`} value={password} onChange={e => setPassword(e.target.value)}>
-					</input>
-					<p className={`mt-5`}>Confirm Password*</p>
-					<input id="password2" type="password" className={`w-full border rounded-xl p-1 pl-3 mt-1`} value={confirmedPassword} onChange={e => setConfirmedPassword(e.target.value)}>
-					</input>
-					<p className="text-xs text-white/90 pt-3 pl-1 mt-1">Password should be at least 15 characters OR 8 characters including a number and an uppercase letter
-					</p>
-					<div>
-						<button className='bg-green-700 min-w-full rounded-xl px-3 py-2 font-bold hover:cursor-pointer hover:bg-green-700/80 mt-5'>
-						Change Password
-						</button>
-					</div>
+	if (done) {
+		return (
+			<AuthShell title="Password updated" subtitle="You can now log in with your new password.">
+				<div className="flex items-center gap-3 rounded-2xl border border-good/30 bg-good/10 p-4 text-[14px] text-good-text">
+					<FiCheckCircle size={18} /> Your password was changed successfully.
 				</div>
+				<ButtonLink href="/auth/login" size="lg" className="mt-5 w-full">
+					Go to log in <FiArrowRight />
+				</ButtonLink>
+			</AuthShell>
+		);
+	}
+
+	return (
+		<AuthShell title="Choose a new password" subtitle="Pick something strong. This link works once and expires 15 minutes after it was sent.">
+			<form onSubmit={handleSubmit} className="space-y-5">
+				<Field
+					label="New password"
+					type="password"
+					autoComplete="new-password"
+					required
+					value={password}
+					onChange={(e) => setPassword(e.target.value)}
+					error={error?.field === "password" ? error.message : undefined}
+					hint={<PasswordChecklist password={password} />}
+					autoFocus
+				/>
+				<Field
+					label="Confirm password"
+					type="password"
+					autoComplete="new-password"
+					required
+					value={confirmedPassword}
+					onChange={(e) => setConfirmedPassword(e.target.value)}
+					error={error?.field === "confirm" ? error.message : undefined}
+				/>
+				{error && error.field !== "password" && error.field !== "confirm" ? (
+					<FormAlert>
+						{error.message}{" "}
+						{error.field === "token" ? <Link href="/auth/forgotpassword" className="underline">Request a new link</Link> : null}
+					</FormAlert>
+				) : null}
+				<Button type="submit" size="lg" className="w-full" disabled={submitting}>
+					{submitting ? "Updating…" : "Update password"}
+				</Button>
 			</form>
-		</div>
-	)
+		</AuthShell>
+	);
 }

@@ -1,82 +1,80 @@
-from fastapi import HTTPException, Path, status
-import sqlalchemy
-from sqlalchemy.engine import create
+from sqlalchemy import func
 from sqlalchemy.orm import Session
-from routes.security import hash_password, verify_password
-from routes import schemas, security
+
+from routes import security
 from . import models
-from sqlalchemy import create_engine, schema
-from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
-import os 
-from dotenv import load_dotenv
-from pathlib import Path
 
-load_dotenv()
+# Re-exported so existing imports (`from routes.database.users import get_db`)
+# keep working.
+from .session import Base, SessionLocal, engine, get_db  # noqa: F401
 
-current_file_dir = Path(__file__).resolve().parent
-project_root = current_file_dir.parent.parent.parent
-db_file_path = project_root / "sql_app.db"
 
-SQLALCHEMY_DATABASE_URL=f"sqlite:///{db_file_path}"
+def get_user_by_id(db: Session, user_id: int) -> models.User | None:
+    return db.get(models.User, user_id)
 
-engine = create_engine(
-        SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
-        )
 
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+def get_user_by_email(db: Session, email: str) -> models.User | None:
+    return (
+        db.query(models.User)
+        .filter(func.lower(models.User.email) == email.strip().lower())
+        .first()
+    )
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
 
-def get_user_db(db: Session, email: str):
-    user = db.query(models.User).filter(models.User.email == email).first()
+def get_user_by_username(db: Session, username: str) -> models.User | None:
+    return (
+        db.query(models.User)
+        .filter(func.lower(models.User.username) == username.strip().lower())
+        .first()
+    )
 
-    if not user:
-        user = db.query(models.User).filter(models.User.username == email).first()
 
-    return user
+def get_user_db(db: Session, identifier: str) -> models.User | None:
+    """Look a user up by email, falling back to username."""
+    return get_user_by_email(db, identifier) or get_user_by_username(db, identifier)
 
-def add_user_db(db: Session, email: str, password: str, username: str):
+
+def add_user_db(
+    db: Session,
+    email: str,
+    password: str,
+    username: str,
+    first_name: str | None = None,
+    last_name: str | None = None,
+) -> models.User:
+    """`password` must already be hashed."""
     db_user = models.User(
-            email=email,
-            hashed_password=password,
-            username=username
-            )
-
+        email=email,
+        hashed_password=password,
+        username=username,
+        first_name=first_name,
+        last_name=last_name,
+    )
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
 
-def reset_password_user(db: Session, password_token: str):
-    user = db.query(models.ResetPassword).filter(models.ResetPassword.token == password_token).first()
 
-    return user
-
-def reset_password_add_db(db: Session, email: str, token: str):
-    user = models.ResetPassword(
-            email=email,
-            token=token
-            )
-    
-    db.add(user)
+def update_password(db: Session, user: models.User, new_hashed_password: str) -> None:
+    user.hashed_password = new_hashed_password
     db.commit()
-    db.refresh(user)
 
-    return user
 
-def verify_user(db: Session, email: str, password: str) -> models.User:
-    user = get_user_db(db, email=email)
+def authenticate_user(db: Session, identifier: str, password: str) -> models.User | None:
+    """Return the user if the credentials are valid, otherwise None.
 
-    if not user:
-        raise HTTPException(status_code=400, detail="User not found")
+    Deliberately does not say *which* part was wrong, so the login form can't
+    be used to discover which emails/usernames have accounts.
+    """
+    user = get_user_db(db, identifier)
+    if user is None:
+        security.dummy_verify()  # keep response time similar for unknown users
+        return None
     if not security.verify_password(password, user.hashed_password):
-        raise HTTPException(status_code=400, detail="Password is incorrect")
+        return None
 
+    # Transparently upgrade the hash if the Argon2 parameters have changed.
+    if security.needs_rehash(user.hashed_password):
+        update_password(db, user, security.hash_password(password))
     return user
