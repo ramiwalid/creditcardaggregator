@@ -54,6 +54,23 @@ def add_user_db(db: Session, email: str, password: str, username: str):
     db.refresh(db_user)
     return db_user
 
+def reset_password_user(db: Session, password_token: str):
+    user = db.query(models.ResetPassword).filter(models.ResetPassword.token == password_token).first()
+
+    return user
+
+def reset_password_add_db(db: Session, email: str, token: str):
+    user = models.ResetPassword(
+            email=email,
+            token=token
+            )
+    
+    db.add(user)
+    db.commit()
+    db.refresh(user)
+
+    return user
+
 def verify_user(db: Session, email: str, password: str) -> models.User:
     user = get_user_db(db, email=email)
 

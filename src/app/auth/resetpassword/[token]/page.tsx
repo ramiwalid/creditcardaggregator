@@ -30,8 +30,7 @@ export default function ResetPassword( {params}: ResetPasswordPageProps) {
 
 		checkPasswords();
 		if (!passwordsMatch) {
-			setPasswordError("Passwords don't match");
-			throw new Error(passwordError);
+			throw new Error("Passwords don't match");
 		}
 
 		const payload = {
@@ -63,7 +62,7 @@ export default function ResetPassword( {params}: ResetPasswordPageProps) {
 			<div className="flex justify-center">
 				<CiCreditCard2 size={70} />
 			</div>
-			<form>
+			<form onSubmit={handleSubmit}>
 				<div className={`block`}>
 					<h1 className="text-center font-bold text-2xl">Create new password</h1>
 					<p className={`mt-5`}>New Password*</p>

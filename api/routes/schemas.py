@@ -23,8 +23,8 @@ class ResetPassword(BaseModel):
     email: str
 
 class ResetPasswordSuccess(BaseModel):
+    email: str
     message: str
 
 class SetNewPassword(BaseModel):
-    token: str
-    new_password: str
+    message: str
