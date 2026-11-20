@@ -8,13 +8,13 @@ const steps = [
 	},
 	{
 		n: "02",
-		title: "Add your cards",
-		body: "Enter each card's balance, limit, and due day. No bank credentials or card numbers required: about a minute per card.",
+		title: "Bring in your cards",
+		body: "Connect your bank through Plaid to import every card automatically, or enter balances and due days by hand. No card numbers required either way.",
 	},
 	{
 		n: "03",
 		title: "Stay ahead",
-		body: "Your dashboard ranks upcoming payments, flags high utilization, and keeps a running ledger as you log payments and charges.",
+		body: "Your dashboard ranks upcoming payments, flags high utilization, and keeps a running ledger of payments and charges.",
 	},
 ];
 

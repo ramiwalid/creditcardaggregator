@@ -43,6 +43,13 @@ npx tsc --noEmit && npm run lint
 | POST | `/auth/forgotpassword` | Email a single-use reset link (15 min) |
 | POST | `/auth/resetpassword` | Set a new password with a reset token |
 | POST | `/contact` | Landing-page contact form (saved + emailed to `CONTACT_INBOX`) |
+| GET | `/plaid/config` | Whether bank linking is enabled |
+| POST | `/plaid/link-token` | Start Plaid Link |
+| POST | `/plaid/exchange` | Finish Link: store the connection, import cards |
+| GET / POST | `/plaid/items`, `/plaid/sync` | List connections / sync those due (every 5 min) |
+| POST | `/plaid/items/{id}/sync` | Sync one connection now |
+| POST | `/plaid/items/{id}/link-token` | Reconnect (Link update mode) |
+| DELETE | `/plaid/items/{id}` | Disconnect: revoke with Plaid, delete its cards |
 | GET / POST | `/cards` | List / add cards |
 | GET | `/cards/summary` | Totals, overall utilization, upcoming payments |
 | GET / PATCH / DELETE | `/cards/{id}` | Read / update / delete one card |
@@ -51,16 +58,26 @@ npx tsc --noEmit && npm run lint
 
 All `/cards` routes require `Authorization: Bearer <token>` and only ever return the caller's own cards. Money is exchanged as integer **cents**.
 
+## Bank linking (Plaid)
+
+Set `PLAID_CLIENT_ID`, `PLAID_SECRET`, `PLAID_ENV=sandbox` and `TOKEN_ENCRYPTION_KEY` in `.env` (see `.env.example`). In the dashboard, click **Connect bank**, pick any institution, and sign in with Plaid's test credentials `user_good` / `pass_good`.
+
+- Only credit card accounts are offered in Link. Cards import with balance, limit, statement balance, minimum payment, purchase APR, and due/statement days (Liabilities), plus 90 days of posted activity (Transactions).
+- For linked cards the bank is the source of truth: those fields are read-only and overwritten on each sync. Name, theme, annual fee, and rewards stay editable.
+- Connections sync when the dashboard opens (at most every 5 minutes) or on **Sync now**. No webhooks yet.
+- Production access (real banks) requires Plaid approval; many large issuers also need an OAuth redirect URI over HTTPS.
+
 ## Security notes
 
 - Passwords are hashed with **Argon2id** (`argon2-cffi`); hashes are never returned by the API.
 - Login and forgot-password responses don't reveal whether an account exists.
 - Reset tokens are typed JWTs bound to the current password hash, so each link works once.
 - Quanta never stores full card numbers, CVVs, or expiry dates; only an optional last four digits.
+- Plaid access tokens are encrypted with Fernet (`TOKEN_ENCRYPTION_KEY`) and never sent to the browser. Losing that key means users must re-link their banks.
 
 ## Roadmap
 
-- Link accounts automatically (e.g. Plaid) instead of manual entry
+- Plaid webhooks for real-time updates; production access
 - Move the token to an httpOnly cookie, add rate limiting on auth routes
 - Alembic migrations, Postgres for deployment
 - Spending trends and payoff planning

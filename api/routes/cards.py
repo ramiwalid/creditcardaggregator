@@ -9,6 +9,18 @@ from routes.security import get_current_user
 
 router = APIRouter(prefix="/cards", tags=["cards"])
 
+# On linked cards these come from the bank and are overwritten on every sync.
+BANK_OWNED_FIELDS = {
+    "issuer", "last_four", "credit_limit_cents", "current_balance_cents",
+    "statement_balance_cents", "minimum_payment_cents", "apr",
+    "statement_close_day", "payment_due_day",
+}
+
+
+def _reject_if_linked(card: models.Card, message: str) -> None:
+    if card.source == "plaid":
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail=message)
+
 
 def _get_owned_card(card_id: int, user: models.User, db: Session) -> models.Card:
     card = card_db.get_card(db, user.id, card_id)
@@ -99,6 +111,14 @@ def update_card(
     db: Session = Depends(get_db),
 ):
     card = _get_owned_card(card_id, user, db)
+    if card.source == "plaid":
+        # Unchanged values are fine (the edit form sends every field).
+        for field, value in body.model_dump(exclude_unset=True).items():
+            if field in BANK_OWNED_FIELDS and value != getattr(card, field):
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail={"field": field, "message": "This comes from your bank and updates on every sync."},
+                )
     return card_db.update_card(db, card, body)
 
 
@@ -108,7 +128,9 @@ def delete_card(
     user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
-    card_db.delete_card(db, _get_owned_card(card_id, user, db))
+    card = _get_owned_card(card_id, user, db)
+    _reject_if_linked(card, "Linked cards are removed by disconnecting the bank.")
+    card_db.delete_card(db, card)
     return Response(status_code=status.HTTP_204_NO_CONTENT)
 
 
@@ -133,6 +155,7 @@ def add_transaction(
     db: Session = Depends(get_db),
 ):
     card = _get_owned_card(card_id, user, db)
+    _reject_if_linked(card, "Activity on linked cards is imported from your bank.")
     return card_db.add_transaction(db, card, body)
 
 
@@ -147,5 +170,6 @@ def delete_transaction(
     tx = card_db.get_transaction(db, card, tx_id)
     if tx is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Transaction not found")
+    _reject_if_linked(card, "Activity on linked cards is imported from your bank.")
     card_db.delete_transaction(db, card, tx)
     return Response(status_code=status.HTTP_204_NO_CONTENT)

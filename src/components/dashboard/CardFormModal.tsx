@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/Button";
 import { FormAlert, inputClass } from "@/components/ui/Field";
 import { api, ApiError } from "@/lib/api";
 import { centsToInput, ordinal, parseDollars } from "@/lib/format";
-import type { Card, CardColor, CardInput, Network } from "@/lib/types";
+import { BANK_OWNED_FIELDS, type Card, type CardColor, type CardInput, type Network } from "@/lib/types";
 
 interface Props {
 	card?: Card; // present when editing
@@ -102,6 +102,8 @@ export default function CardFormModal({ card, onClose, onSaved }: Props) {
 	const [errors, setErrors] = useState<Partial<Record<keyof FormState | "form", string>>>({});
 	const [saving, setSaving] = useState(false);
 
+	const linked = card?.source === "plaid";
+	const fromBank = linked ? "From your bank" : undefined;
 	const set = <K extends keyof FormState>(key: K, value: FormState[K]) => setForm((f) => ({ ...f, [key]: value }));
 
 	/** Validate and convert the string form into the API payload. */
@@ -164,7 +166,10 @@ export default function CardFormModal({ card, onClose, onSaved }: Props) {
 		if (!payload) return;
 		setSaving(true);
 		try {
-			const saved = card ? await api.updateCard(card.id, payload) : await api.createCard(payload);
+			// Linked cards: never send bank-owned values; the sync owns them.
+			const body: Partial<CardInput> = { ...payload };
+			if (linked) for (const f of BANK_OWNED_FIELDS) delete body[f];
+			const saved = card ? await api.updateCard(card.id, body) : await api.createCard(payload);
 			onSaved(saved);
 		} catch (err) {
 			setErrors({ form: err instanceof ApiError ? err.message : "Couldn't save this card." });
@@ -178,7 +183,13 @@ export default function CardFormModal({ card, onClose, onSaved }: Props) {
 	return (
 		<Modal
 			title={card ? `Edit ${card.name}` : "Add a card"}
-			description={card ? "Update balances, dates, and details." : "Only the details you want to track. No card numbers needed."}
+			description={
+				linked
+					? `Balances, limits, and dates sync from ${card.issuer}. You can rename it and track fees and rewards.`
+					: card
+						? "Update balances, dates, and details."
+						: "Only the details you want to track. No card numbers needed."
+			}
 			onClose={onClose}
 			wide
 		>
@@ -226,10 +237,10 @@ export default function CardFormModal({ card, onClose, onSaved }: Props) {
 						<Labeled label="Card name" error={errors.name} className="col-span-2">
 							{(id) => <input id={id} className={inputClass} value={form.name} onChange={(e) => set("name", e.target.value)} placeholder="Sapphire Preferred" maxLength={60} autoFocus aria-invalid={!!errors.name || undefined} />}
 						</Labeled>
-						<Labeled label="Issuer" error={errors.issuer} className="col-span-2">
+						<Labeled label="Issuer" error={errors.issuer} hint={fromBank} className="col-span-2">
 							{(id) => (
 								<>
-									<input id={id} className={inputClass} value={form.issuer} onChange={(e) => set("issuer", e.target.value)} placeholder="Chase" list="issuer-suggestions" maxLength={60} aria-invalid={!!errors.issuer || undefined} />
+									<input id={id} className={inputClass} value={form.issuer} onChange={(e) => set("issuer", e.target.value)} placeholder="Chase" list="issuer-suggestions" maxLength={60} disabled={linked} aria-invalid={!!errors.issuer || undefined} />
 									<datalist id="issuer-suggestions">
 										{ISSUER_SUGGESTIONS.map((i) => <option key={i} value={i} />)}
 									</datalist>
@@ -245,45 +256,45 @@ export default function CardFormModal({ card, onClose, onSaved }: Props) {
 								</Select>
 							)}
 						</Labeled>
-						<Labeled label="Last 4 digits" error={errors.last_four}>
-							{(id) => <Prefixed id={id} value={form.last_four} onChange={(e) => set("last_four", e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="1234" inputMode="numeric" />}
+						<Labeled label="Last 4 digits" error={errors.last_four} hint={fromBank}>
+							{(id) => <Prefixed id={id} disabled={linked} value={form.last_four} onChange={(e) => set("last_four", e.target.value.replace(/\D/g, "").slice(0, 4))} placeholder="1234" inputMode="numeric" />}
 						</Labeled>
 					</Section>
 
 					<Section title="Balances">
-						<Labeled label="Current balance" error={errors.current_balance}>
-							{(id) => <Prefixed id={id} prefix="$" value={form.current_balance} onChange={(e) => set("current_balance", e.target.value)} placeholder="0.00" inputMode="decimal" />}
+						<Labeled label="Current balance" error={errors.current_balance} hint={fromBank}>
+							{(id) => <Prefixed id={id} disabled={linked} prefix="$" value={form.current_balance} onChange={(e) => set("current_balance", e.target.value)} placeholder="0.00" inputMode="decimal" />}
 						</Labeled>
-						<Labeled label="Credit limit" error={errors.credit_limit} hint="Leave blank for charge cards">
-							{(id) => <Prefixed id={id} prefix="$" value={form.credit_limit} onChange={(e) => set("credit_limit", e.target.value)} placeholder="10,000" inputMode="decimal" />}
+						<Labeled label="Credit limit" error={errors.credit_limit} hint={fromBank ?? "Leave blank for charge cards"}>
+							{(id) => <Prefixed id={id} disabled={linked} prefix="$" value={form.credit_limit} onChange={(e) => set("credit_limit", e.target.value)} placeholder="10,000" inputMode="decimal" />}
 						</Labeled>
-						<Labeled label="Statement balance" error={errors.statement_balance}>
-							{(id) => <Prefixed id={id} prefix="$" value={form.statement_balance} onChange={(e) => set("statement_balance", e.target.value)} placeholder="0.00" inputMode="decimal" />}
+						<Labeled label="Statement balance" error={errors.statement_balance} hint={fromBank}>
+							{(id) => <Prefixed id={id} disabled={linked} prefix="$" value={form.statement_balance} onChange={(e) => set("statement_balance", e.target.value)} placeholder="0.00" inputMode="decimal" />}
 						</Labeled>
-						<Labeled label="Minimum payment" error={errors.minimum_payment}>
-							{(id) => <Prefixed id={id} prefix="$" value={form.minimum_payment} onChange={(e) => set("minimum_payment", e.target.value)} placeholder="0.00" inputMode="decimal" />}
+						<Labeled label="Minimum payment" error={errors.minimum_payment} hint={fromBank}>
+							{(id) => <Prefixed id={id} disabled={linked} prefix="$" value={form.minimum_payment} onChange={(e) => set("minimum_payment", e.target.value)} placeholder="0.00" inputMode="decimal" />}
 						</Labeled>
 					</Section>
 
 					<Section title="Dates & terms">
-						<Labeled label="Payment due">
+						<Labeled label="Payment due" hint={fromBank}>
 							{(id) => (
-								<Select id={id} value={form.payment_due_day} onChange={(e) => set("payment_due_day", e.target.value)}>
+								<Select id={id} disabled={linked} value={form.payment_due_day} onChange={(e) => set("payment_due_day", e.target.value)}>
 									<option value="" className="bg-panel">Not set</option>
 									{DAYS.map((d) => <option key={d} value={d} className="bg-panel">{ordinal(d)} of the month</option>)}
 								</Select>
 							)}
 						</Labeled>
-						<Labeled label="Statement closes">
+						<Labeled label="Statement closes" hint={fromBank}>
 							{(id) => (
-								<Select id={id} value={form.statement_close_day} onChange={(e) => set("statement_close_day", e.target.value)}>
+								<Select id={id} disabled={linked} value={form.statement_close_day} onChange={(e) => set("statement_close_day", e.target.value)}>
 									<option value="" className="bg-panel">Not set</option>
 									{DAYS.map((d) => <option key={d} value={d} className="bg-panel">{ordinal(d)} of the month</option>)}
 								</Select>
 							)}
 						</Labeled>
-						<Labeled label="APR" error={errors.apr}>
-							{(id) => <Prefixed id={id} suffix="%" value={form.apr} onChange={(e) => set("apr", e.target.value)} placeholder="24.99" inputMode="decimal" />}
+						<Labeled label="APR" error={errors.apr} hint={fromBank}>
+							{(id) => <Prefixed id={id} disabled={linked} suffix="%" value={form.apr} onChange={(e) => set("apr", e.target.value)} placeholder="24.99" inputMode="decimal" />}
 						</Labeled>
 						<Labeled label="Annual fee" error={errors.annual_fee}>
 							{(id) => <Prefixed id={id} prefix="$" value={form.annual_fee} onChange={(e) => set("annual_fee", e.target.value)} placeholder="0" inputMode="decimal" />}

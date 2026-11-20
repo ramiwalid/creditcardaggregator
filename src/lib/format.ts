@@ -67,3 +67,16 @@ export function utilizationTone(fraction: number | null | undefined): "good" | "
 export function formatCompactCents(cents: number): string {
 	return new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", notation: "compact", maximumFractionDigits: 1 }).format(cents / 100);
 }
+
+/** "just now", "5 min ago", "3 hr ago", "2 days ago" for an ISO timestamp. */
+export function timeAgo(iso: string | null | undefined, now = Date.now()): string {
+	if (!iso) return "never";
+	const seconds = Math.max(0, Math.round((now - new Date(iso).getTime()) / 1000));
+	if (seconds < 45) return "just now";
+	const minutes = Math.round(seconds / 60);
+	if (minutes < 60) return `${minutes} min ago`;
+	const hours = Math.round(minutes / 60);
+	if (hours < 24) return `${hours} hr ago`;
+	const days = Math.round(hours / 24);
+	return `${days} day${days === 1 ? "" : "s"} ago`;
+}

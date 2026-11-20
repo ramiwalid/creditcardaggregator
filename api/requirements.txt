@@ -6,6 +6,8 @@ python-dotenv==1.2.1
 python-jose==3.5.0
 argon2-cffi==25.1.0
 python-multipart==0.0.20
+plaid-python==47.0.0
+cryptography==50.0.2
 
 # dev / test
 pytest==9.2.0

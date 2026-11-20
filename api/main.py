@@ -7,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 load_dotenv()
 
-from routes import cards, contact  # noqa: E402
+from routes import cards, contact, plaid  # noqa: E402
 from routes.auth import forgotpassword, login, resetpassword, signup  # noqa: E402
 from routes.database import models  # noqa: E402,F401  (registers tables on Base)
 from routes.database.migrations import run_migrations  # noqa: E402
@@ -49,3 +49,4 @@ app.include_router(forgotpassword.router, prefix="/auth", tags=["auth"])
 app.include_router(resetpassword.router, prefix="/auth", tags=["auth"])
 app.include_router(cards.router)
 app.include_router(contact.router)
+app.include_router(plaid.router)

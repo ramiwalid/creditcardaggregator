@@ -1,13 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { FiAlertTriangle, FiArrowUpRight, FiCalendar, FiClock, FiPlus, FiRefreshCw, FiUser } from "react-icons/fi";
+import { FiAlertTriangle, FiArrowUpRight, FiCalendar, FiClock, FiLink, FiPlus, FiRefreshCw, FiUser } from "react-icons/fi";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { Button } from "@/components/ui/Button";
 import { formatCents, formatDate, formatPercent, utilizationTone } from "@/lib/format";
 import { displayName, type Card, type CardSummary, type UpcomingPayment } from "@/lib/types";
 import CreditCardVisual from "./CreditCardVisual";
 import { useCards } from "./CardsProvider";
+import { useBanks } from "./BanksProvider";
 import { CARD_THEMES, UTILIZATION_STATUS } from "./cardStyles";
 import { Panel, PanelHeader, StatusLabel, UtilizationMeter } from "./ui";
 
@@ -19,6 +20,8 @@ function greeting() {
 export default function Overview() {
 	const { user } = useAuth();
 	const { cards, summary, error, refresh, openAddCard, openProfile } = useCards();
+	const banks = useBanks();
+	const needsSignIn = banks.items.filter((i) => i.status === "login_required");
 	const today = new Date().toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" });
 
 	return (
@@ -31,10 +34,31 @@ export default function Overview() {
 					</h1>
 					<p className="mt-1 text-[15px] text-muted">Here&apos;s where every card stands right now.</p>
 				</div>
-				<Button onClick={openAddCard} className="self-start sm:self-auto">
-					<FiPlus size={16} /> Add card
-				</Button>
+				{banks.enabled ? (
+					<div className="flex gap-2 self-start sm:self-auto">
+						<Button variant="secondary" onClick={openAddCard}>
+							<FiPlus size={16} /> Add manually
+						</Button>
+						<Button onClick={banks.connectBank} disabled={banks.connecting}>
+							<FiLink size={15} /> {banks.connecting ? "Connecting…" : "Connect bank"}
+						</Button>
+					</div>
+				) : (
+					<Button onClick={openAddCard} className="self-start sm:self-auto">
+						<FiPlus size={16} /> Add card
+					</Button>
+				)}
 			</header>
+
+			{needsSignIn.map((item) => (
+				<div key={item.id} role="alert" className="flex flex-col justify-between gap-3 rounded-2xl border border-warning/40 bg-warning/[0.07] px-4 py-3 sm:flex-row sm:items-center">
+					<p className="flex items-center gap-2.5 text-[14px] text-fg">
+						<FiAlertTriangle className="flex-none text-warning" />
+						{item.institution_name ?? "Your bank"} needs you to sign in again. Until then, its cards show the last synced data.
+					</p>
+					<Button size="sm" variant="secondary" onClick={() => banks.reconnect(item.id)} className="self-start sm:self-auto">Reconnect</Button>
+				</div>
+			))}
 
 			{user && !user.first_name ? (
 				<div className="flex flex-col justify-between gap-3 rounded-2xl border border-accent/30 bg-accent/[0.07] px-4 py-3 sm:flex-row sm:items-center">
@@ -55,7 +79,7 @@ export default function Overview() {
 			{cards === null || summary === null ? (
 				!error && <LoadingSkeleton />
 			) : cards.length === 0 ? (
-				<EmptyState onAdd={openAddCard} />
+				<EmptyState onAdd={openAddCard} onConnect={banks.enabled ? banks.connectBank : undefined} connecting={banks.connecting} />
 			) : (
 				<>
 					<div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
@@ -256,7 +280,7 @@ function UtilizationBreakdown({ cards }: { cards: Card[] }) {
 	);
 }
 
-function EmptyState({ onAdd }: { onAdd: () => void }) {
+function EmptyState({ onAdd, onConnect, connecting }: { onAdd: () => void; onConnect?: () => void; connecting?: boolean }) {
 	return (
 		<div className="border-gradient relative overflow-hidden rounded-3xl bg-panel px-6 py-20 text-center">
 			<div className="bg-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_at_center,#000,transparent_70%)]" />
@@ -267,11 +291,24 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 				</div>
 				<h2 className="mt-10 text-2xl font-semibold tracking-tight">Add your first card</h2>
 				<p className="mt-2 text-[15px] leading-relaxed text-muted">
-					Enter a balance, limit, and due date. Quanta will track utilization and upcoming payments across everything you own.
+					{onConnect
+						? "Connect your bank to import every card automatically, or enter one by hand. Quanta tracks utilization and upcoming payments across everything you own."
+						: "Enter a balance, limit, and due date. Quanta will track utilization and upcoming payments across everything you own."}
 				</p>
-				<Button onClick={onAdd} size="lg" className="mt-7">
-					<FiPlus /> Add a card
-				</Button>
+				{onConnect ? (
+					<div className="mt-7 flex flex-wrap justify-center gap-3">
+						<Button onClick={onConnect} size="lg" disabled={connecting}>
+							<FiLink /> {connecting ? "Connecting…" : "Connect a bank"}
+						</Button>
+						<Button onClick={onAdd} size="lg" variant="secondary">
+							<FiPlus /> Add manually
+						</Button>
+					</div>
+				) : (
+					<Button onClick={onAdd} size="lg" className="mt-7">
+						<FiPlus /> Add a card
+					</Button>
+				)}
 			</div>
 		</div>
 	);

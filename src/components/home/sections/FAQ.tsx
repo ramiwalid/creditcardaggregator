@@ -4,7 +4,7 @@ import Reveal, { SectionHeader } from "../Reveal";
 const faqs = [
 	{
 		q: "Does Quanta connect to my bank?",
-		a: "Not yet. Today you add cards manually, which takes about a minute per card and means Quanta never needs your banking credentials. Automatic syncing is on the roadmap.",
+		a: "If you want it to. You can connect a bank through Plaid to import your credit cards, balances, due dates, and activity automatically. You sign in on Plaid's secure screen, so Quanta never sees your bank password, and only credit card accounts are shared. Prefer not to connect? Add cards by hand instead; it takes about a minute each.",
 	},
 	{
 		q: "Do you store my card number?",
@@ -12,7 +12,7 @@ const faqs = [
 	},
 	{
 		q: "Will using Quanta affect my credit score?",
-		a: "No. Quanta doesn't pull your credit or talk to the credit bureaus. It only shows the numbers you enter.",
+		a: "No. Quanta doesn't pull your credit or talk to the credit bureaus. It only shows the numbers you enter or import from your bank.",
 	},
 	{
 		q: "How is utilization calculated?",

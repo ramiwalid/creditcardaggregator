@@ -4,7 +4,7 @@ import { useId, useState, type ComponentProps, type ReactNode } from "react";
 import { FiEye, FiEyeOff } from "react-icons/fi";
 
 export const inputClass =
-	"h-11 w-full rounded-xl border border-line-strong bg-white/[0.03] px-3.5 text-[15px] text-fg placeholder:text-subtle outline-none transition-[border-color,box-shadow,background-color] hover:border-white/20 focus:border-accent/70 focus:bg-white/[0.05] focus:shadow-[0_0_0_4px_rgb(139_123_255/0.15)] aria-[invalid=true]:border-critical/70 aria-[invalid=true]:focus:shadow-[0_0_0_4px_rgb(208_59_59/0.18)]";
+	"h-11 w-full rounded-xl border border-line-strong bg-white/[0.03] px-3.5 text-[15px] text-fg placeholder:text-subtle outline-none transition-[border-color,box-shadow,background-color] hover:border-white/20 focus:border-accent/70 focus:bg-white/[0.05] focus:shadow-[0_0_0_4px_rgb(139_123_255/0.15)] aria-[invalid=true]:border-critical/70 aria-[invalid=true]:focus:shadow-[0_0_0_4px_rgb(208_59_59/0.18)] disabled:cursor-not-allowed disabled:border-line disabled:bg-transparent disabled:text-muted disabled:hover:border-line";
 
 interface FieldProps extends Omit<ComponentProps<"input">, "id"> {
 	label: string;

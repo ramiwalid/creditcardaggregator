@@ -3,18 +3,20 @@
 import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { FiGrid, FiLogOut, FiMenu, FiPlus, FiX, FiArrowUpRight } from "react-icons/fi";
+import { FiAlertTriangle, FiArrowUpRight, FiGrid, FiLink, FiLogOut, FiMenu, FiPlus, FiRefreshCw, FiX, FiXCircle } from "react-icons/fi";
 import Logo from "@/components/ui/Logo";
 import { useAuth } from "@/components/auth/AuthProvider";
 import { formatCents } from "@/lib/format";
 import { displayName, fullName } from "@/lib/types";
 import { useCards } from "./CardsProvider";
+import { useBanks } from "./BanksProvider";
 import { CARD_THEMES } from "./cardStyles";
 
 function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 	const pathname = usePathname();
 	const { user, logout } = useAuth();
 	const { cards, openAddCard, openProfile } = useCards();
+	const banks = useBanks();
 
 	const navItem = (active: boolean) =>
 		`group flex items-center gap-3 rounded-xl px-3 py-2 text-[14px] transition-colors ${active ? "bg-white/[0.07] text-fg shadow-[inset_0_0_0_1px_rgb(255_255_255/0.06)]" : "text-muted hover:bg-white/[0.04] hover:text-fg"}`;
@@ -49,6 +51,7 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 									<Link href={href} onClick={onNavigate} className={navItem(pathname === href)}>
 										<span className="h-2.5 w-2.5 flex-none rounded-full" style={{ background: CARD_THEMES[c.color].dot }} />
 										<span className="min-w-0 flex-1 truncate">{c.name}</span>
+										{c.source === "plaid" ? <FiLink size={11} className="flex-none text-subtle" aria-label="Linked" /> : null}
 										<span className="font-mono text-[11px] text-subtle">{formatCents(c.current_balance_cents, { whole: true })}</span>
 									</Link>
 								</li>
@@ -56,6 +59,44 @@ function SidebarContent({ onNavigate }: { onNavigate?: () => void }) {
 						})
 					)}
 				</ul>
+
+				{banks.enabled ? (
+					<>
+						<div className="mt-7 flex items-center justify-between px-3">
+							<p className="font-mono text-[10px] uppercase tracking-[0.2em] text-subtle">Banks</p>
+							<button onClick={() => { banks.connectBank(); onNavigate?.(); }} aria-label="Connect a bank" className="flex h-6 w-6 cursor-pointer items-center justify-center rounded-md text-subtle hover:bg-white/[0.06] hover:text-fg">
+								<FiPlus size={14} />
+							</button>
+						</div>
+						<ul className="mt-2 space-y-0.5">
+							{banks.items.length === 0 ? (
+								<li>
+									<button onClick={() => { banks.connectBank(); onNavigate?.(); }} disabled={banks.connecting} className={`${navItem(false)} w-full cursor-pointer text-left`}>
+										<FiLink size={14} /> {banks.connecting ? "Connecting…" : "Connect a bank"}
+									</button>
+								</li>
+							) : (
+								banks.items.map((item) => (
+									<li key={item.id}>
+										<button onClick={() => { banks.openBanks(); onNavigate?.(); }} className={`${navItem(false)} w-full cursor-pointer text-left`}>
+											<span className="flex h-5 w-5 flex-none items-center justify-center rounded-md border border-line bg-white/[0.04] text-[10px] font-semibold uppercase text-fg">
+												{(item.institution_name ?? "B").slice(0, 1)}
+											</span>
+											<span className="min-w-0 flex-1 truncate">{item.institution_name ?? "Bank"}</span>
+											{banks.syncing.has(item.id) || item.transactions_pending ? (
+												<FiRefreshCw size={12} className="flex-none animate-spin text-subtle" aria-label="Syncing" />
+											) : item.status === "login_required" ? (
+												<FiAlertTriangle size={12} className="flex-none text-warning" aria-label="Sign-in needed" />
+											) : item.status === "error" ? (
+												<FiXCircle size={12} className="flex-none text-critical-text" aria-label="Sync failed" />
+											) : null}
+										</button>
+									</li>
+								))
+							)}
+						</ul>
+					</>
+				) : null}
 			</nav>
 
 			<div className="space-y-1 border-t border-line p-3">

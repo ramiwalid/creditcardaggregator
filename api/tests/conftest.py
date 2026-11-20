@@ -11,8 +11,10 @@ _TEST_DB = Path(__file__).parent / "test.db"
 os.environ["QUANTA_DATABASE_URL"] = f"sqlite:///{_TEST_DB}"
 os.environ["SECRET_KEY"] = "test-secret-key-not-for-production"
 os.environ["ALGORITHM"] = "HS256"
-for var in ("SMTP_USER", "SMTP_PASSWORD", "PASSWORD", "CONTACT_INBOX"):
+for var in ("SMTP_USER", "SMTP_PASSWORD", "PASSWORD", "CONTACT_INBOX", "PLAID_CLIENT_ID", "PLAID_SECRET"):
     os.environ[var] = ""
+# Fixed test-only key (never the real one from .env).
+os.environ["TOKEN_ENCRYPTION_KEY"] = "3m1uAFxfBDB8hLR4W7yE0fBZpZQsnmHcXqxmXQ_aJFg="
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 

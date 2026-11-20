@@ -11,10 +11,23 @@ from sqlalchemy.engine import Engine
 
 logger = logging.getLogger("quanta.migrations")
 
-# table -> {column: SQL type}
+# table -> {column: SQL column definition}
 ADDED_COLUMNS = {
     "users": {"first_name": "VARCHAR", "last_name": "VARCHAR"},
+    "cards": {
+        "source": "VARCHAR NOT NULL DEFAULT 'manual'",
+        "plaid_item_id": "INTEGER REFERENCES plaid_items(id) ON DELETE CASCADE",
+        "plaid_account_id": "VARCHAR",
+    },
+    "card_transactions": {"plaid_transaction_id": "VARCHAR"},
 }
+
+# Indexes that create_all would only make for brand-new tables.
+INDEXES = [
+    'CREATE INDEX IF NOT EXISTS "ix_cards_plaid_item_id" ON "cards" ("plaid_item_id")',
+    'CREATE UNIQUE INDEX IF NOT EXISTS "ux_cards_plaid_account" ON "cards" ("plaid_account_id")',
+    'CREATE UNIQUE INDEX IF NOT EXISTS "ux_tx_plaid_id" ON "card_transactions" ("plaid_transaction_id")',
+]
 
 
 def run_migrations(engine: Engine) -> None:
@@ -28,3 +41,7 @@ def run_migrations(engine: Engine) -> None:
                 if name not in existing:
                     conn.execute(text(f'ALTER TABLE "{table}" ADD COLUMN "{name}" {sql_type}'))
                     logger.info("Added column %s.%s", table, name)
+        for statement in INDEXES:
+            table = statement.split(" ON ")[1].split()[0].strip('"')
+            if inspector.has_table(table):
+                conn.execute(text(statement))

@@ -6,12 +6,13 @@ const lines: [string, string][] = [
 	["sessions", "signed JWT · expiring bearer tokens"],
 	["reset links", "single-use · expire in 15 min"],
 	["card data", "last 4 digits only · no PAN / CVV"],
+	["bank links", "via Plaid · tokens encrypted at rest"],
 	["isolation", "every query scoped to its owner"],
 	["login", "uniform errors · no account enumeration"],
 ];
 
 const points = [
-	"We never ask for your bank username or password.",
+	"Bank connections go through Plaid. Quanta never sees your bank password, and only credit card accounts are shared.",
 	"Full card numbers, CVVs, and expiry dates are never collected.",
 	"Your cards are only visible to your account. Other users get a 404, not a 403.",
 ];

@@ -3,7 +3,9 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FiArrowDownLeft, FiArrowUpRight, FiChevronRight, FiEdit2, FiTrash2, FiActivity } from "react-icons/fi";
+import { FiArrowDownLeft, FiArrowUpRight, FiChevronRight, FiEdit2, FiTrash2, FiActivity, FiLink, FiRefreshCw } from "react-icons/fi";
+import { useBanks } from "./BanksProvider";
+import { SyncStatus } from "./BanksModal";
 import { Button } from "@/components/ui/Button";
 import { FormAlert, inputClass } from "@/components/ui/Field";
 import { api, ApiError } from "@/lib/api";
@@ -54,7 +56,11 @@ function buildHistory(card: Card, txs: Transaction[]) {
 export default function CardDetail({ cardId }: { cardId: number }) {
 	const router = useRouter();
 	const { cards, refresh, openEditCard } = useCards();
+	const banks = useBanks();
 	const card = cards?.find((c) => c.id === cardId);
+	const linked = card?.source === "plaid";
+	const item = banks.itemFor(card?.plaid_item_id);
+	const itemSyncing = item ? banks.syncing.has(item.id) : false;
 
 	const [txs, setTxs] = useState<Transaction[] | null>(null);
 	const [loadError, setLoadError] = useState("");
@@ -72,9 +78,13 @@ export default function CardDetail({ cardId }: { cardId: number }) {
 	useEffect(() => {
 		// eslint-disable-next-line react-hooks/set-state-in-effect -- fetch on mount; state is set after the await
 		loadTxs();
-	}, [loadTxs]);
+	}, [loadTxs, banks.dataVersion]); // reload after a bank sync
 
 	const history = useMemo(() => (card && txs ? buildHistory(card, txs) : null), [card, txs]);
+	// Bank activity is limited to ~90 days of posted entries, so walking back
+	// from the bank's balance can produce impossible history (e.g. deeply
+	// negative). Don't chart an estimate we can't stand behind.
+	const historyReliable = !linked || !history || history.points.every((p) => p.value >= -5000);
 
 	if (cards === null) return <div className="h-96 animate-pulse rounded-3xl bg-white/[0.04]" />;
 	if (!card) {
@@ -118,9 +128,28 @@ export default function CardDetail({ cardId }: { cardId: number }) {
 						{card.issuer} · {NETWORK_LABELS[card.network]}{card.last_four ? ` · •••• ${card.last_four}` : ""}
 					</p>
 					<h1 className="mt-2 text-3xl font-semibold tracking-tight sm:text-[34px]">{card.name}</h1>
+					{linked ? (
+						<div className="mt-2.5 flex flex-wrap items-center gap-3">
+							<span className="inline-flex items-center gap-1.5 rounded-full border border-accent/30 bg-accent/10 px-2.5 py-1 text-[12px] text-fg">
+								<FiLink size={11} className="text-accent" /> Linked
+							</span>
+							{item ? <SyncStatus item={item} syncing={itemSyncing} /> : null}
+						</div>
+					) : null}
 				</div>
 				<div className="flex gap-2">
-					{confirmDelete ? (
+					{linked ? (
+						<>
+							{item?.status === "login_required" ? (
+								<Button variant="secondary" size="sm" onClick={() => banks.reconnect(item.id)}>Reconnect</Button>
+							) : item ? (
+								<Button variant="ghost" size="sm" disabled={itemSyncing} onClick={() => banks.syncItem(item.id)}>
+									<FiRefreshCw size={13} className={itemSyncing ? "animate-spin" : ""} /> Sync now
+								</Button>
+							) : null}
+							<Button variant="secondary" size="sm" onClick={() => openEditCard(card)}><FiEdit2 size={13} /> Edit card</Button>
+						</>
+					) : confirmDelete ? (
 						<>
 							<Button variant="ghost" size="sm" onClick={() => setConfirmDelete(false)}>Cancel</Button>
 							<Button variant="danger" size="sm" onClick={deleteCard}><FiTrash2 size={13} /> Confirm delete</Button>
@@ -165,18 +194,32 @@ export default function CardDetail({ cardId }: { cardId: number }) {
 					<Panel className="!p-5">
 						<PanelHeader
 							title="Balance history"
-							action={<span className="font-mono text-[11px] text-subtle">from logged activity</span>}
+							action={<span className="font-mono text-[11px] text-subtle">{linked ? (historyReliable ? "estimated from bank activity" : "") : "from logged activity"}</span>}
 						/>
 						<div className="mt-4">
 							{txs === null ? (
 								<div className="h-[240px] animate-pulse rounded-2xl bg-white/[0.03]" />
-							) : history && history.points.length > 0 ? (
+							) : history && history.points.length > 0 && historyReliable ? (
 								<BalanceChart points={history.points} />
+							) : history && history.points.length > 0 ? (
+								<div className="flex h-[240px] flex-col items-center justify-center rounded-2xl border border-dashed border-line px-6 text-center">
+									<FiActivity className="text-subtle" size={22} />
+									<p className="mt-3 text-[14px] text-muted">No reliable history to chart</p>
+									<p className="mt-1 max-w-sm text-[13px] text-subtle">
+										Your bank&apos;s recent activity doesn&apos;t fully account for the current balance (usually older or pending charges), so Quanta won&apos;t guess.
+									</p>
+								</div>
 							) : (
 								<div className="flex h-[240px] flex-col items-center justify-center rounded-2xl border border-dashed border-line text-center">
 									<FiActivity className="text-subtle" size={22} />
 									<p className="mt-3 text-[14px] text-muted">No history yet</p>
-									<p className="mt-1 max-w-xs text-[13px] text-subtle">Log a payment or charge and your balance history will chart itself here.</p>
+									<p className="mt-1 max-w-xs text-[13px] text-subtle">
+										{linked
+											? item?.transactions_pending
+												? "Importing activity from your bank. This usually takes a few seconds."
+												: "No posted activity from your bank in the last 90 days."
+											: "Log a payment or charge and your balance history will chart itself here."}
+									</p>
 								</div>
 							)}
 						</div>
@@ -186,12 +229,27 @@ export default function CardDetail({ cardId }: { cardId: number }) {
 
 			<div className="grid grid-cols-1 gap-6 lg:grid-cols-[minmax(0,360px)_minmax(0,1fr)]">
 				<div className="space-y-4">
-					<LogActivity card={card} onLogged={afterChange} />
+					{linked ? <LinkedNotice issuer={card.issuer} onOpenBanks={banks.openBanks} /> : <LogActivity card={card} onLogged={afterChange} />}
 					<Details card={card} />
 				</div>
-				<Ledger txs={txs} after={history?.after} cardId={card.id} onChanged={afterChange} />
+				<Ledger txs={txs} after={historyReliable ? history?.after : undefined} cardId={card.id} onChanged={afterChange} linked={linked} importing={!!item?.transactions_pending} />
 			</div>
 		</div>
+	);
+}
+
+function LinkedNotice({ issuer, onOpenBanks }: { issuer: string; onOpenBanks: () => void }) {
+	return (
+		<Panel className="!p-5">
+			<PanelHeader title="Synced from your bank" />
+			<p className="mt-3 text-[13px] leading-relaxed text-muted">
+				Balances, limit, due dates, and activity come from {issuer} and update each time you open Quanta.
+				You can still rename this card, change its theme, and track its annual fee and rewards.
+			</p>
+			<button onClick={onOpenBanks} className="mt-4 cursor-pointer text-[13px] text-accent hover:underline">
+				Manage bank connections
+			</button>
+		</Panel>
 	);
 }
 
@@ -327,7 +385,7 @@ function LogActivity({ card, onLogged }: { card: Card; onLogged: () => Promise<v
 	);
 }
 
-function Ledger({ txs, after, cardId, onChanged }: { txs: Transaction[] | null; after?: Map<number, number>; cardId: number; onChanged: () => Promise<void> }) {
+function Ledger({ txs, after, cardId, onChanged, linked, importing }: { txs: Transaction[] | null; after?: Map<number, number>; cardId: number; onChanged: () => Promise<void>; linked?: boolean; importing?: boolean }) {
 	const [error, setError] = useState("");
 
 	async function remove(tx: Transaction) {
@@ -370,7 +428,13 @@ function Ledger({ txs, after, cardId, onChanged }: { txs: Transaction[] | null; 
 			{txs === null ? (
 				<div className="space-y-2 p-5">{[0, 1, 2].map((i) => <div key={i} className="h-12 animate-pulse rounded-xl bg-white/[0.03]" />)}</div>
 			) : txs.length === 0 ? (
-				<p className="px-5 pb-6 pt-4 text-[14px] text-subtle">No activity logged yet. Entries you log will appear here with a running balance.</p>
+				<p className="px-5 pb-6 pt-4 text-[14px] text-subtle">
+					{linked
+						? importing
+							? "Importing activity from your bank…"
+							: "No posted activity from your bank in the last 90 days."
+						: "No activity logged yet. Entries you log will appear here with a running balance."}
+				</p>
 			) : (
 				<div className="mt-3 overflow-x-auto pb-2">
 					<table className="w-full min-w-[520px] text-[13px]">
@@ -379,14 +443,14 @@ function Ledger({ txs, after, cardId, onChanged }: { txs: Transaction[] | null; 
 								<th className="px-5 py-2.5 text-left font-normal">Date</th>
 								<th className="px-2 py-2.5 text-left font-normal">Description</th>
 								<th className="px-2 py-2.5 text-right font-normal">Amount</th>
-								<th className="px-2 py-2.5 text-right font-normal">Balance</th>
+								{after ? <th className="px-2 py-2.5 text-right font-normal">Balance</th> : null}
 								<th className="w-12 px-5" aria-label="Actions" />
 							</tr>
 						</thead>
 						{groups.map(([month, rows]) => (
 							<tbody key={month}>
 								<tr>
-									<td colSpan={5} className="px-5 pb-1.5 pt-4 text-[11px] font-medium text-muted">{month}</td>
+									<td colSpan={after ? 5 : 4} className="px-5 pb-1.5 pt-4 text-[11px] font-medium text-muted">{month}</td>
 								</tr>
 								{rows.map((tx) => (
 									<tr key={tx.id} className="group border-b border-line/60 last:border-0 hover:bg-white/[0.02]">
@@ -406,15 +470,15 @@ function Ledger({ txs, after, cardId, onChanged }: { txs: Transaction[] | null; 
 											{tx.kind === "payment" ? "−" : "+"}
 											{formatCents(tx.amount_cents)}
 										</td>
-										<td className="whitespace-nowrap px-2 py-3 text-right font-mono text-subtle [font-variant-numeric:tabular-nums]">{after ? formatCents(after.get(tx.id)) : "—"}</td>
+										{after ? <td className="whitespace-nowrap px-2 py-3 text-right font-mono text-subtle [font-variant-numeric:tabular-nums]">{formatCents(after.get(tx.id))}</td> : null}
 										<td className="px-5 py-3 text-right">
-											<button
+											{tx.synced ? null : <button
 												onClick={() => remove(tx)}
 												aria-label={`Delete ${tx.description || tx.kind}`}
 												className="cursor-pointer rounded-lg p-1.5 text-subtle opacity-100 transition hover:bg-critical/10 hover:text-critical-text focus:opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
 											>
 												<FiTrash2 size={13} />
-											</button>
+											</button>}
 										</td>
 									</tr>
 								))}

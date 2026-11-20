@@ -1,8 +1,17 @@
 import calendar
-from datetime import date
-from typing import Literal
+from datetime import date, datetime, timezone
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, computed_field, field_validator
+from pydantic import AfterValidator, BaseModel, ConfigDict, Field, computed_field, field_validator
+
+
+def _as_utc(value: datetime) -> datetime:
+    # SQLite drops tzinfo; timestamps are stored in UTC. Without this the
+    # browser would read them as local time.
+    return value.replace(tzinfo=timezone.utc) if value.tzinfo is None else value
+
+
+UTCDateTime = Annotated[datetime, AfterValidator(_as_utc)]
 
 # --------------------------------------------------------------------------
 # Auth
@@ -177,6 +186,11 @@ class CardOut(BaseModel):
     statement_close_day: int | None
     payment_due_day: int | None
     rewards: str | None
+    # "manual" or "plaid". For linked cards, bank-owned fields are read-only.
+    source: str = "manual"
+    plaid_item_id: int | None = None
+    synced_at: UTCDateTime | None = None
+    sync_status: str | None = None
 
     @computed_field
     @property
@@ -263,6 +277,38 @@ class TransactionOut(BaseModel):
     amount_cents: int
     description: str | None
     occurred_on: date
+    synced: bool = False
+
+
+# --------------------------------------------------------------------------
+# Plaid
+# --------------------------------------------------------------------------
+
+
+class PlaidConfig(BaseModel):
+    enabled: bool
+    environment: str
+
+
+class LinkToken(BaseModel):
+    link_token: str
+
+
+class PublicTokenExchange(BaseModel):
+    public_token: str = Field(min_length=1, max_length=200)
+
+
+class PlaidItemOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    institution_name: str | None
+    status: str
+    error_message: str | None
+    last_synced_at: UTCDateTime | None
+    created_at: UTCDateTime
+    card_ids: list[int]
+    transactions_pending: bool
 
 
 # --------------------------------------------------------------------------

@@ -3,6 +3,7 @@ import type {
 	Card,
 	CardInput,
 	CardSummary,
+	PlaidItem,
 	SignupInput,
 	Transaction,
 	TransactionInput,
@@ -134,4 +135,17 @@ export const api = {
 		request<Transaction>(`/cards/${cardId}/transactions`, { method: "POST", body: json(tx) }),
 	deleteTransaction: (cardId: number, txId: number) =>
 		request<void>(`/cards/${cardId}/transactions/${txId}`, { method: "DELETE" }),
+
+	// Bank connections (Plaid)
+	plaidConfig: () => request<{ enabled: boolean; environment: string }>("/plaid/config"),
+	plaidLinkToken: () => request<{ link_token: string }>("/plaid/link-token", { method: "POST" }),
+	plaidExchange: (publicToken: string) =>
+		request<PlaidItem>("/plaid/exchange", { method: "POST", body: json({ public_token: publicToken }) }),
+	plaidItems: () => request<PlaidItem[]>("/plaid/items"),
+	/** Syncs connections that are due (throttled server-side). */
+	plaidSyncAll: () => request<PlaidItem[]>("/plaid/sync", { method: "POST" }),
+	plaidSyncItem: (id: number) => request<PlaidItem>(`/plaid/items/${id}/sync`, { method: "POST" }),
+	plaidReconnectToken: (id: number) =>
+		request<{ link_token: string }>(`/plaid/items/${id}/link-token`, { method: "POST" }),
+	plaidDisconnect: (id: number) => request<void>(`/plaid/items/${id}`, { method: "DELETE" }),
 };

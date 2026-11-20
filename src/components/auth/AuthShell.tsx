@@ -10,7 +10,7 @@ interface Props {
 	footer?: React.ReactNode;
 }
 
-const points = ["Every balance and limit in one view", "Due dates sorted by urgency", "No bank logins or card numbers"];
+const points = ["Every balance and limit in one view", "Due dates sorted by urgency", "Link your bank or add cards by hand"];
 
 export default function AuthShell({ title, subtitle, children, footer }: Props) {
 	return (

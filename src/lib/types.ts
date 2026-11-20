@@ -60,7 +60,39 @@ export interface Card extends CardInput {
 	next_due_date: string | null;
 	days_until_due: number | null;
 	next_statement_date: string | null;
+	/** "plaid" cards are imported from a bank; their balances are read-only. */
+	source: "manual" | "plaid";
+	plaid_item_id: number | null;
+	synced_at: string | null;
+	sync_status: PlaidItemStatus | null;
 }
+
+export type PlaidItemStatus = "ok" | "login_required" | "error";
+
+export interface PlaidItem {
+	id: number;
+	institution_name: string | null;
+	status: PlaidItemStatus;
+	error_message: string | null;
+	last_synced_at: string | null;
+	created_at: string;
+	card_ids: number[];
+	/** True until Plaid finishes the first transaction import. */
+	transactions_pending: boolean;
+}
+
+/** Fields a linked card gets from the bank (read-only in the edit form). */
+export const BANK_OWNED_FIELDS = [
+	"issuer",
+	"last_four",
+	"credit_limit_cents",
+	"current_balance_cents",
+	"statement_balance_cents",
+	"minimum_payment_cents",
+	"apr",
+	"statement_close_day",
+	"payment_due_day",
+] as const;
 
 export interface UpcomingPayment {
 	card_id: number;
@@ -94,6 +126,8 @@ export interface Transaction {
 	amount_cents: number;
 	description: string | null;
 	occurred_on: string;
+	/** Imported from the bank via Plaid. */
+	synced: boolean;
 }
 
 export interface TransactionInput {

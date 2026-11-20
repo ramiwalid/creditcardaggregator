@@ -69,13 +69,13 @@ export default function Features() {
 										<span className="text-muted">never collected</span>
 									</div>
 									<div className="flex items-center justify-between">
-										<span className="text-subtle">bank login</span>
-										<span className="text-muted">not required</span>
+										<span className="text-subtle">bank password</span>
+										<span className="text-muted">never seen</span>
 									</div>
 								</div>
 							}
 						>
-							No bank logins, no full card numbers, no CVVs. Just the last four digits, and only if you want them.
+							Bank sign-in happens on Plaid&apos;s screen, never ours. No full card numbers, no CVVs. Just the last four digits.
 						</Panel>
 					</Reveal>
 
